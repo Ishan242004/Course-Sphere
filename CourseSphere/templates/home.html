@@ -6,9 +6,6 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-3">
-            <i class="bi bi-stars me-1"></i> Unified Education Platform
-        </span>
         <h1 class="display-4 fw-extrabold text-dark mb-3">
             Welcome to <span class="text-primary">Course</span>Sphere
         </h1>
@@ -17,96 +14,60 @@
         </p>
     </div>
 
-    {% if user.is_authenticated %}
-        <!-- Active User Status Card -->
-        <div class="row justify-content-center mb-5">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: #ffffff; border-left: 6px solid var(--cs-primary) !important;">
-                    <h3 class="fw-bold mb-1 text-dark">Hello, {{ user.first_name|default:user.username }}! 👋</h3>
-                    <p class="text-muted mb-3">
-                        You are currently signed in as 
-                        {% if user.student_profile %}
-                            <span class="badge badge-student">Student</span>
-                        {% elif user.instructor_profile %}
-                            <span class="badge badge-instructor">Instructor</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Admin</span>
-                        {% endif %}
+    {% if not user.is_authenticated %}
+        <div class="row g-4 justify-content-center">
+            <!-- Student Card -->
+            <div class="col-md-6 col-lg-5">
+                <div class="card h-100 border-0 shadow-lg rounded-4 p-4 p-lg-5 d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%); border-top: 5px solid #0d9488 !important;">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(13, 148, 136, 0.15); color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                            <i class="bi bi-backpack2-fill"></i>
+                        </div>
+                        <div>
+                            <span class="badge badge-student mb-1">Learner</span>
+                            <h3 class="fw-bold mb-0 text-dark">Student Portal</h3>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-4 flex-grow-1">
+                        Access your enrolled courses, view syllabus, submit assignments, track grades, and connect with faculty.
                     </p>
-                    <div class="d-flex justify-content-center gap-2 flex-wrap">
-                        {% if user.student_profile %}
-                            <a href="{% url 'student:student_dashboard' %}" class="btn btn-brand btn-brand-student px-4">
-                                <i class="bi bi-speedometer2 me-1"></i> Open Student Dashboard
-                            </a>
-                            <a href="{% url 'student:student_logout' %}" class="btn btn-outline-danger px-4">
-                                <i class="bi bi-box-arrow-right me-1"></i> Sign Out
-                            </a>
-                        {% elif user.instructor_profile %}
-                            <a href="{% url 'instructor:instructor_dashboard' %}" class="btn btn-brand btn-brand-instructor px-4">
-                                <i class="bi bi-speedometer2 me-1"></i> Open Instructor Dashboard
-                            </a>
-                            <a href="{% url 'instructor:instructor_logout' %}" class="btn btn-outline-danger px-4">
-                                <i class="bi bi-box-arrow-right me-1"></i> Sign Out
-                            </a>
-                        {% endif %}
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'student:student_login' %}" class="btn btn-brand btn-brand-student">
+                            <i class="bi bi-box-arrow-in-right"></i> Student Login
+                        </a>
+                        <a href="{% url 'student:student_register' %}" class="btn btn-outline-secondary rounded-3 py-2 fw-semibold">
+                            <i class="bi bi-person-plus"></i> Create Student Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructor Card -->
+            <div class="col-md-6 col-lg-5">
+                <div class="card h-100 border-0 shadow-lg rounded-4 p-4 p-lg-5 d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%); border-top: 5px solid #7c3aed !important;">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(124, 58, 237, 0.15); color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                            <i class="bi bi-person-video3"></i>
+                        </div>
+                        <div>
+                            <span class="badge badge-instructor mb-1">Educator</span>
+                            <h3 class="fw-bold mb-0 text-dark">Instructor Portal</h3>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-4 flex-grow-1">
+                        Manage course curriculums, organize modules, review submissions, and empower students worldwide.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'instructor:instructor_login' %}" class="btn btn-brand btn-brand-instructor">
+                            <i class="bi bi-box-arrow-in-right"></i> Instructor Login
+                        </a>
+                        <a href="{% url 'instructor:instructor_register' %}" class="btn btn-outline-secondary rounded-3 py-2 fw-semibold">
+                            <i class="bi bi-person-plus"></i> Create Instructor Account
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     {% endif %}
-
-    <div class="row g-4 justify-content-center">
-        <!-- Student Card -->
-        <div class="col-md-6 col-lg-5">
-            <div class="card h-100 border-0 shadow-lg rounded-4 p-4 p-lg-5 d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%); border-top: 5px solid #0d9488 !important;">
-                <div class="d-flex align-items-center gap-3 mb-4">
-                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(13, 148, 136, 0.15); color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
-                        <i class="bi bi-backpack2-fill"></i>
-                    </div>
-                    <div>
-                        <span class="badge badge-student mb-1">Learner</span>
-                        <h3 class="fw-bold mb-0 text-dark">Student Portal</h3>
-                    </div>
-                </div>
-                <p class="text-muted mb-4 flex-grow-1">
-                    Access your enrolled courses, view syllabus, submit assignments, track grades, and connect with faculty.
-                </p>
-                <div class="d-grid gap-2">
-                    <a href="{% url 'student:student_login' %}" class="btn btn-brand btn-brand-student">
-                        <i class="bi bi-box-arrow-in-right"></i> Student Login
-                    </a>
-                    <a href="{% url 'student:student_register' %}" class="btn btn-outline-secondary rounded-3 py-2 fw-semibold">
-                        <i class="bi bi-person-plus"></i> Create Student Account
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Instructor Card -->
-        <div class="col-md-6 col-lg-5">
-            <div class="card h-100 border-0 shadow-lg rounded-4 p-4 p-lg-5 d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%); border-top: 5px solid #7c3aed !important;">
-                <div class="d-flex align-items-center gap-3 mb-4">
-                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(124, 58, 237, 0.15); color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
-                        <i class="bi bi-person-video3"></i>
-                    </div>
-                    <div>
-                        <span class="badge badge-instructor mb-1">Educator</span>
-                        <h3 class="fw-bold mb-0 text-dark">Instructor Portal</h3>
-                    </div>
-                </div>
-                <p class="text-muted mb-4 flex-grow-1">
-                    Manage course curriculums, organize modules, review submissions, and empower students worldwide.
-                </p>
-                <div class="d-grid gap-2">
-                    <a href="{% url 'instructor:instructor_login' %}" class="btn btn-brand btn-brand-instructor">
-                        <i class="bi bi-box-arrow-in-right"></i> Instructor Login
-                    </a>
-                    <a href="{% url 'instructor:instructor_register' %}" class="btn btn-outline-secondary rounded-3 py-2 fw-semibold">
-                        <i class="bi bi-person-plus"></i> Create Instructor Account
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
