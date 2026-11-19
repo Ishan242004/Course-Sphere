@@ -17,6 +17,44 @@
         </p>
     </div>
 
+    {% if user.is_authenticated %}
+        <!-- Active User Status Card -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: #ffffff; border-left: 6px solid var(--cs-primary) !important;">
+                    <h3 class="fw-bold mb-1 text-dark">Hello, {{ user.first_name|default:user.username }}! 👋</h3>
+                    <p class="text-muted mb-3">
+                        You are currently signed in as 
+                        {% if user.student_profile %}
+                            <span class="badge badge-student">Student</span>
+                        {% elif user.instructor_profile %}
+                            <span class="badge badge-instructor">Instructor</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Admin</span>
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        {% if user.student_profile %}
+                            <a href="{% url 'student:student_dashboard' %}" class="btn btn-brand btn-brand-student px-4">
+                                <i class="bi bi-speedometer2 me-1"></i> Open Student Dashboard
+                            </a>
+                            <a href="{% url 'student:student_logout' %}" class="btn btn-outline-danger px-4">
+                                <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                            </a>
+                        {% elif user.instructor_profile %}
+                            <a href="{% url 'instructor:instructor_dashboard' %}" class="btn btn-brand btn-brand-instructor px-4">
+                                <i class="bi bi-speedometer2 me-1"></i> Open Instructor Dashboard
+                            </a>
+                            <a href="{% url 'instructor:instructor_logout' %}" class="btn btn-outline-danger px-4">
+                                <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="row g-4 justify-content-center">
         <!-- Student Card -->
         <div class="col-md-6 col-lg-5">

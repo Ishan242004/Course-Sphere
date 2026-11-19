@@ -23,6 +23,7 @@
 <body>
 
     <!-- Navigation Bar -->
+    {% block navbar %}
     <nav class="navbar navbar-expand-lg cs-navbar shadow-sm sticky-top">
         <div class="container-fluid px-lg-4">
             <a class="cs-brand" href="{% url 'home' %}">
@@ -38,12 +39,6 @@
 
             <div class="collapse navbar-collapse" id="csNavbarNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center gap-2 mt-3 mt-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-2" href="{% url 'home' %}">
-                            <i class="bi bi-house-door me-1"></i> Home
-                        </a>
-                    </li>
-
                     {% if user.is_authenticated %}
                         {% if user.student_profile %}
                             <li class="nav-item">
@@ -73,32 +68,25 @@
                             </li>
                         {% endif %}
                     {% else %}
-                        <!-- Student Dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle fw-semibold px-2" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-backpack2 me-1 text-teal"></i> Student Portal
+                        <!-- Direct Login Button -->
+                        <li class="nav-item">
+                            <a href="{% url 'student:student_login' %}" class="btn btn-outline-primary rounded-pill px-3 py-1 fw-semibold">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item py-2" href="{% url 'student:student_login' %}"><i class="bi bi-box-arrow-in-right me-2 text-teal"></i> Student Login</a></li>
-                                <li><a class="dropdown-item py-2" href="{% url 'student:student_register' %}"><i class="bi bi-person-plus me-2 text-teal"></i> Student Register</a></li>
-                            </ul>
                         </li>
 
-                        <!-- Instructor Dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle fw-semibold px-2" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-video3 me-1 text-purple"></i> Instructor Portal
+                        <!-- Direct Register Button -->
+                        <li class="nav-item">
+                            <a href="{% url 'student:student_register' %}" class="btn btn-primary rounded-pill px-3 py-1 fw-semibold">
+                                <i class="bi bi-person-plus me-1"></i> Register
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item py-2" href="{% url 'instructor:instructor_login' %}"><i class="bi bi-box-arrow-in-right me-2 text-purple"></i> Instructor Login</a></li>
-                                <li><a class="dropdown-item py-2" href="{% url 'instructor:instructor_register' %}"><i class="bi bi-person-plus me-2 text-purple"></i> Instructor Register</a></li>
-                            </ul>
                         </li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
+    {% endblock %}
 
     <!-- Global Messages Notification Container -->
     <div class="container mt-3">
@@ -126,12 +114,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="py-3 bg-white border-top text-center text-muted small mt-auto">
-        <div class="container">
-            <span>&copy; 2026 <strong>CourseSphere</strong>. All rights reserved. Built with Django & Bootstrap 5.</span>
-        </div>
-    </footer>
+
 
     <!-- Bootstrap 5.3.3 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

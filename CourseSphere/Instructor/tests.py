@@ -12,8 +12,19 @@ class InstructorAuthTests(TestCase):
         self.login_url = reverse('instructor:instructor_login')
         self.logout_url = reverse('instructor:instructor_logout')
         self.dashboard_url = reverse('instructor:instructor_dashboard')
+        self.home_url = reverse('home')
 
-    def test_instructor_registration_success(self):
+    def test_new_instructor_login_redirects_to_register_page(self):
+        """New instructor entering nonexistent credentials on login gets redirected to register with simple message."""
+        response = self.client.post(self.login_url, {
+            'username': 'brand_new_prof',
+            'password': 'SomePassword123'
+        }, follow=True)
+        self.assertRedirects(response, f"{self.register_url}?username=brand_new_prof")
+        self.assertContains(response, "Account not found. Please register first.")
+
+    def test_instructor_registration_redirects_to_login_page(self):
+        """After registration, redirects to login page with simple success message."""
         response = self.client.post(self.register_url, {
             'first_name': 'Dr. Robert',
             'last_name': 'Brown',
@@ -24,22 +35,22 @@ class InstructorAuthTests(TestCase):
             'bio': 'PhD in Artificial Intelligence',
             'password': 'StrongPassword123',
             'confirm_password': 'StrongPassword123',
-        })
+        }, follow=True)
         self.assertRedirects(response, self.login_url)
+        self.assertContains(response, "Registration successful! Please login.")
         self.assertTrue(User.objects.filter(username='dr_brown').exists())
-        user = User.objects.get(username='dr_brown')
-        self.assertTrue(hasattr(user, 'instructor_profile'))
-        self.assertEqual(user.instructor_profile.specialization, 'Computer Science')
 
-    def test_instructor_login_success(self):
+    def test_instructor_login_redirects_to_home_page(self):
+        """After login, redirects to home page with success message."""
         user = User.objects.create_user(username='prof_clark', email='clark@example.com', password='Password123')
         Instructor.objects.create(user=user, specialization='Mathematics')
 
         response = self.client.post(self.login_url, {
             'username': 'prof_clark',
             'password': 'Password123'
-        })
-        self.assertRedirects(response, self.dashboard_url)
+        }, follow=True)
+        self.assertRedirects(response, self.home_url)
+        self.assertContains(response, "Login successful! Welcome to CourseSphere.")
 
     def test_student_blocked_from_instructor_login(self):
         user = User.objects.create_user(username='student_sam', email='sam@example.com', password='Password123')

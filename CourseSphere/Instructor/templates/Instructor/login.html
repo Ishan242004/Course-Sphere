@@ -3,26 +3,37 @@
 
 {% block title %}Instructor Login - CourseSphere{% endblock %}
 
+{% block navbar %}{% endblock %}
+
 {% block content %}
 <div class="auth-wrapper theme-instructor">
     <div class="auth-card animate-fade-in">
+        <!-- Role Switcher Tabs (From Screenshot) -->
+        <div class="px-4 pt-4">
+            <div class="role-switcher">
+                <a href="{% url 'student:student_login' %}" class="role-switch-btn inactive">
+                    <span class="role-icon">🎓</span> Student
+                </a>
+                <a href="{% url 'instructor:instructor_login' %}" class="role-switch-btn active-instructor">
+                    <span class="role-icon">🧑‍🏫</span> Instructor
+                </a>
+            </div>
+        </div>
+
         <!-- Header -->
-        <div class="auth-header">
-            <span class="role-badge badge-instructor">
-                <i class="bi bi-person-video3"></i> Instructor Portal
-            </span>
-            <h2>Welcome Back, Educator!</h2>
+        <div class="auth-header pt-1">
+            <h2>Instructor Login</h2>
             <p>Access your instructor cockpit, manage courses, and review submissions</p>
         </div>
 
         <!-- Body Form -->
         <div class="auth-body">
             {% if form.non_field_errors %}
-                <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
-                    {% for error in form.non_field_errors %}
-                        <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
-                    {% endfor %}
-                </div>
+            <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
+                {% for error in form.non_field_errors %}
+                <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
             {% endif %}
 
             <form method="POST" action="{% url 'instructor:instructor_login' %}" class="auth-form" novalidate>
@@ -36,7 +47,8 @@
                         {{ form.username }}
                     </div>
                     {% if form.username.errors %}
-                        <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0 }}</div>
+                    <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0 }}
+                    </div>
                     {% endif %}
                 </div>
 
@@ -51,7 +63,8 @@
                         </button>
                     </div>
                     {% if form.password.errors %}
-                        <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.password.errors.0 }}</div>
+                    <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.password.errors.0 }}
+                    </div>
                     {% endif %}
                 </div>
 
@@ -60,20 +73,13 @@
                     <i class="bi bi-box-arrow-in-right"></i> Sign In to Instructor Portal
                 </button>
             </form>
-
-            <!-- Role Switcher -->
-            <div class="role-switch-banner mt-4">
-                <span>Are you a student?</span>
-                <a href="{% url 'student:student_login' %}" class="text-teal ms-1">
-                    Log in as Student &rarr;
-                </a>
-            </div>
         </div>
 
-        <!-- Footer -->
-        <div class="auth-footer">
-            <span>New Instructor? </span>
-            <a href="{% url 'instructor:instructor_register' %}">Create an Instructor Account</a>
+        <!-- Footer: Only Register link when on Login page -->
+        <div class="auth-footer py-3 px-3 text-center">
+            <span class="text-muted">Don't have an account?</span>
+            <a href="{% url 'instructor:instructor_register' %}" class="link-instructor ms-1">Create an Instructor
+                Account &rarr;</a>
         </div>
     </div>
 </div>

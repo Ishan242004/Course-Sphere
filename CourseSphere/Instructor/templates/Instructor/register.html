@@ -3,15 +3,26 @@
 
 {% block title %}Instructor Registration - CourseSphere{% endblock %}
 
+{% block navbar %}{% endblock %}
+
 {% block content %}
 <div class="auth-wrapper theme-instructor">
     <div class="auth-card auth-card-wide animate-fade-in">
+        <!-- Role Switcher Tabs (From Screenshot) -->
+        <div class="px-4 pt-4">
+            <div class="role-switcher">
+                <a href="{% url 'student:student_register' %}" class="role-switch-btn inactive">
+                    <span class="role-icon">🎓</span> Student
+                </a>
+                <a href="{% url 'instructor:instructor_register' %}" class="role-switch-btn active-instructor">
+                    <span class="role-icon">🧑‍🏫</span> Instructor
+                </a>
+            </div>
+        </div>
+
         <!-- Header -->
-        <div class="auth-header">
-            <span class="role-badge badge-instructor">
-                <i class="bi bi-person-video3"></i> Instructor Portal
-            </span>
-            <h2>Join as an Educator</h2>
+        <div class="auth-header pt-1">
+            <h2>Instructor Registration</h2>
             <p>Share your knowledge, teach students worldwide, and create courses</p>
         </div>
 
@@ -146,23 +157,15 @@
 
                 <!-- Submit Button -->
                 <button type="submit" class="btn btn-brand btn-brand-instructor w-100">
-                    <i class="bi bi-person-check-fill"></i> Register as Instructor
+                    <i class="bi bi-person-check-fill"></i> Complete Registration
                 </button>
             </form>
-
-            <!-- Role Switcher -->
-            <div class="role-switch-banner mt-4">
-                <span>Looking to learn as a student instead?</span>
-                <a href="{% url 'student:student_register' %}" class="text-teal ms-1">
-                    Register as Student &rarr;
-                </a>
-            </div>
         </div>
 
-        <!-- Footer -->
-        <div class="auth-footer">
-            <span>Already have an instructor account? </span>
-            <a href="{% url 'instructor:instructor_login' %}">Log In here</a>
+        <!-- Footer: Only Login link when on Register page -->
+        <div class="auth-footer py-3 px-3 text-center">
+            <span class="text-muted">Already have an account?</span>
+            <a href="{% url 'instructor:instructor_login' %}" class="link-instructor ms-1">Log in as Instructor &rarr;</a>
         </div>
     </div>
 </div>

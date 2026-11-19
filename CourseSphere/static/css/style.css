@@ -3,12 +3,12 @@
     --cs-primary: #4f46e5;
     --cs-primary-hover: #4338ca;
     --cs-primary-light: #eef2ff;
-    
+
     --cs-student: #0d9488;
     --cs-student-hover: #0f766e;
     --cs-student-light: #f0fdfa;
     --cs-student-gradient: linear-gradient(135deg, #0d9488 0%, #2563eb 100%);
-    
+
     --cs-instructor: #7c3aed;
     --cs-instructor-hover: #6d28d9;
     --cs-instructor-light: #faf5ff;
@@ -20,12 +20,12 @@
     --cs-border: #e2e8f0;
     --cs-card-bg: #ffffff;
     --cs-body-bg: #f8fafc;
-    
+
     --cs-radius-sm: 8px;
     --cs-radius-md: 12px;
     --cs-radius-lg: 16px;
-    --cs-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --cs-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --cs-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --cs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     --cs-shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 6px 12px -3px rgba(15, 23, 42, 0.04);
     --cs-shadow-xl: 0 20px 30px -10px rgba(15, 23, 42, 0.12);
 }
@@ -69,6 +69,7 @@ body {
     left: -100px;
     background: radial-gradient(circle, rgba(13, 148, 136, 0.35) 0%, rgba(37, 99, 235, 0.1) 70%);
 }
+
 .theme-student::after {
     bottom: -120px;
     right: -100px;
@@ -81,6 +82,7 @@ body {
     left: -100px;
     background: radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, rgba(79, 70, 229, 0.1) 70%);
 }
+
 .theme-instructor::after {
     bottom: -120px;
     right: -100px;
@@ -97,12 +99,12 @@ body {
     box-shadow: var(--cs-shadow-xl);
     overflow: hidden;
     width: 100%;
-    max-width: 520px;
+    max-width: 580px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .auth-card-wide {
-    max-width: 640px;
+    max-width: 660px;
 }
 
 /* Card Header Banner */
@@ -211,7 +213,7 @@ body {
     border-color: var(--cs-instructor);
 }
 
-.input-group-custom .form-control:focus ~ .input-icon {
+.input-group-custom .form-control:focus~.input-icon {
     color: var(--cs-dark);
 }
 
@@ -255,6 +257,7 @@ body {
 .btn-brand-student {
     background: var(--cs-student-gradient);
 }
+
 .btn-brand-student:hover {
     filter: brightness(1.08);
     box-shadow: 0 8px 16px -3px rgba(13, 148, 136, 0.35);
@@ -265,6 +268,7 @@ body {
 .btn-brand-instructor {
     background: var(--cs-instructor-gradient);
 }
+
 .btn-brand-instructor:hover {
     filter: brightness(1.08);
     box-shadow: 0 8px 16px -3px rgba(124, 58, 237, 0.35);
@@ -282,45 +286,127 @@ body {
     gap: 0.25rem;
 }
 
+/* Role-specific Link Classes matching buttons */
+.auth-footer a.link-student,
+a.link-student {
+    color: #0d9488 !important;
+    /* Exact vibrant teal from student theme */
+    font-weight: 700 !important;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.auth-footer a.link-student:hover,
+a.link-student:hover {
+    color: #0f766e !important;
+    text-decoration: underline !important;
+}
+
+.auth-footer a.link-instructor,
+a.link-instructor {
+    color: #7c3aed !important;
+    /* Exact vibrant purple from instructor theme */
+    font-weight: 700 !important;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.auth-footer a.link-instructor:hover,
+a.link-instructor:hover {
+    color: #6d28d9 !important;
+    text-decoration: underline !important;
+}
+
+/* Bullet divider */
+.auth-footer .divider-dot {
+    color: #94a3b8;
+    margin: 0 0.85rem;
+    font-size: 0.95rem;
+    user-select: none;
+    display: inline-block;
+}
+
 /* Auth Footer */
 .auth-footer {
-    padding: 1.25rem 2rem;
+    padding: 1.1rem 1.25rem;
     background: #f8fafc;
     border-top: 1px solid var(--cs-border);
+    font-size: 0.88rem;
     text-align: center;
-    font-size: 0.9rem;
 }
 
 .auth-footer a {
-    color: var(--cs-primary);
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
 }
+
 .auth-footer a:hover {
     text-decoration: underline;
 }
 
-.theme-student .auth-footer a {
-    color: var(--cs-student);
-}
-.theme-instructor .auth-footer a {
-    color: var(--cs-instructor);
+@media (max-width: 576px) {
+    .auth-footer {
+        font-size: 0.74rem;
+        padding: 0.85rem 0.4rem;
+    }
+
+    .auth-footer .divider-dot {
+        margin: 0 0.4rem;
+    }
 }
 
-/* Role Switcher banner */
-.role-switch-banner {
-    margin-top: 1.25rem;
-    padding: 0.85rem 1rem;
-    border-radius: var(--cs-radius-md);
-    background: #f1f5f9;
-    font-size: 0.86rem;
-    color: var(--cs-muted);
-    text-align: center;
+/* Role Switcher Tabs (Matching Screenshot) */
+.role-switcher {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
-.role-switch-banner a {
+.role-switch-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
     font-weight: 700;
+    font-size: 0.96rem;
     text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1.5px solid transparent;
+}
+
+.role-switch-btn .role-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+/* Inactive button */
+.role-switch-btn.inactive {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+.role-switch-btn.inactive:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+
+/* Active Student Tab */
+.role-switch-btn.active-student {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border-color: #bae6fd;
+    box-shadow: 0 2px 6px rgba(3, 105, 161, 0.08);
+}
+
+/* Active Instructor Tab */
+.role-switch-btn.active-instructor {
+    background-color: #f3e8ff;
+    color: #6b21a8;
+    border-color: #e9d5ff;
+    box-shadow: 0 2px 6px rgba(107, 33, 168, 0.08);
 }
 
 /* Navbar */
@@ -389,6 +475,7 @@ body {
         opacity: 0;
         transform: translateY(12px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
