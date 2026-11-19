@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CourseSphere - Welcome to Next-Gen Learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-3">
+            <i class="bi bi-stars me-1"></i> Unified Education Platform
+        </span>
+        <h1 class="display-4 fw-extrabold text-dark mb-3">
+            Welcome to <span class="text-primary">Course</span>Sphere
+        </h1>
+        <p class="lead text-muted mx-auto" style="max-width: 650px;">
+            Seamless digital learning for students and instructors. Choose your portal below to sign in or create an account.
+        </p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Student Card -->
+        <div class="col-md-6 col-lg-5">
+            <div class="card h-100 border-0 shadow-lg rounded-4 p-4 p-lg-5 d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%); border-top: 5px solid #0d9488 !important;">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(13, 148, 136, 0.15); color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                        <i class="bi bi-backpack2-fill"></i>
+                    </div>
+                    <div>
+                        <span class="badge badge-student mb-1">Learner</span>
+                        <h3 class="fw-bold mb-0 text-dark">Student Portal</h3>
+                    </div>
+                </div>
+                <p class="text-muted mb-4 flex-grow-1">
+                    Access your enrolled courses, view syllabus, submit assignments, track grades, and connect with faculty.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'student:student_login' %}" class="btn btn-brand btn-brand-student">
+                        <i class="bi bi-box-arrow-in-right"></i> Student Login
+                    </a>
+                    <a href="{% url 'student:student_register' %}" class="btn btn-outline-secondary rounded-3 py-2 fw-semibold">
+                        <i class="bi bi-person-plus"></i> Create Student Account
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructor Card -->
+        <div class="col-md-6 col-lg-5">
+            <div class="card h-100 border-0 shadow-lg rounded-4 p-4 p-lg-5 d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%); border-top: 5px solid #7c3aed !important;">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(124, 58, 237, 0.15); color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                        <i class="bi bi-person-video3"></i>
+                    </div>
+                    <div>
+                        <span class="badge badge-instructor mb-1">Educator</span>
+                        <h3 class="fw-bold mb-0 text-dark">Instructor Portal</h3>
+                    </div>
+                </div>
+                <p class="text-muted mb-4 flex-grow-1">
+                    Manage course curriculums, organize modules, review submissions, and empower students worldwide.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'instructor:instructor_login' %}" class="btn btn-brand btn-brand-instructor">
+                        <i class="bi bi-box-arrow-in-right"></i> Instructor Login
+                    </a>
+                    <a href="{% url 'instructor:instructor_register' %}" class="btn btn-outline-secondary rounded-3 py-2 fw-semibold">
+                        <i class="bi bi-person-plus"></i> Create Instructor Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
