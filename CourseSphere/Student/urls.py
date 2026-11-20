@@ -8,6 +8,11 @@ urlpatterns = [
     path('login/', views.student_login, name='student_login'),
     path('logout/', views.student_logout, name='student_logout'),
     path('dashboard/', views.student_dashboard, name='student_dashboard'),
+    # Courses
+    path('courses/', views.course_list, name='course_list'),
+    path('courses/<int:course_id>/', views.course_detail, name='course_detail'),
+    path('course-list/', views.course_list, name='student_course_list'),
+    path('course-detail/<int:course_id>/', views.course_detail, name='student_course_detail'),
     # Forgot Password flow
     path('forgot-password/', views.student_forgot_password, name='student_forgot_password'),
     path('verify-otp/', views.student_verify_otp, name='student_verify_otp'),

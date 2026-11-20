@@ -82,10 +82,14 @@
             </form>
         </div>
 
-        <!-- Footer: Only Register link when on Login page -->
-        <div class="auth-footer py-3 px-3 text-center">
+        <!-- Footer: Register link + Admin login link -->
+        <div class="auth-footer text-center">
             <span class="text-muted">Don't have an account?</span>
             <a href="{% url 'student:student_register' %}" class="link-student ms-1">Create a Student Account &rarr;</a>
+            <span class="divider-dot">•</span>
+            <a href="{% url 'admin_portal:admin_login' %}" class="link-admin">
+                <i class="bi bi-shield-lock me-1"></i>Admin Login &rarr;
+            </a>
         </div>
     </div>
 </div>

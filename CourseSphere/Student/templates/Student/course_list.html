@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Courses — CourseSphere{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item active text-teal fw-semibold" aria-current="page">Courses</li>
+        </ol>
+    </nav>
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
+        <div>
+            <div class="d-inline-flex align-items-center gap-2 badge badge-student mb-2">
+                <i class="bi bi-mortarboard-fill"></i> Course Catalog
+            </div>
+            <h1 class="display-5 fw-extrabold text-dark mb-2">
+                Explore Our Courses
+            </h1>
+            <p class="text-muted mb-0 lead" style="font-size: 1.05rem;">
+                Browse through all available courses designed to advance your skills and career.
+            </p>
+        </div>
+        <div class="text-md-end">
+            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fs-6 fw-semibold shadow-sm">
+                <i class="bi bi-collection-play-fill text-teal me-1"></i>
+                {{ total_courses }} Available Course{{ total_courses|pluralize }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form method="GET" action="{% url 'student:course_list' %}" class="row g-2 align-items-center">
+            <div class="col-md-7 col-lg-8">
+                <div class="input-group-custom">
+                    <span class="input-icon"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by title, category, or description..." autocomplete="off">
+                </div>
+            </div>
+            <div class="col-md-3 col-lg-2">
+                <select name="category" class="form-select" style="height: 46px; border-radius: var(--cs-radius-md); border: 1.5px solid var(--cs-border);">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if selected_category|lower == cat|lower %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-brand btn-brand-student w-100">
+                    <i class="bi bi-funnel-fill me-1"></i> Filter
+                </button>
+                {% if search_query or selected_category %}
+                    <a href="{% url 'student:course_list' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" title="Clear Filters" style="height: 46px; border-radius: var(--cs-radius-md);">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Category Filter Pills -->
+    {% if categories %}
+    <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+        <span class="text-muted small fw-bold me-1">Categories:</span>
+        <a href="{% url 'student:course_list' %}" class="course-filter-pill {% if not selected_category %}active{% endif %}">
+            All
+        </a>
+        {% for cat in categories %}
+            <a href="{% url 'student:course_list' %}?category={{ cat|urlencode }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" class="course-filter-pill {% if selected_category|lower == cat|lower %}active{% endif %}">
+                {{ cat }}
+            </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Course Cards Grid -->
+    {% if courses %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 animate-fade-in">
+        {% for course in courses %}
+        <div class="col">
+            <div class="card h-100 course-card">
+                <!-- Thumbnail / Header Image -->
+                <div class="course-card-img-wrapper">
+                    <span class="course-category-badge">
+                        <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
+                    </span>
+
+                    {% if course.course_image %}
+                        <img src="{{ course.course_image.url }}" class="course-card-img" alt="{{ course.course_title }}" loading="lazy">
+                    {% else %}
+                        <div class="course-card-placeholder">
+                            <i class="bi bi-journal-code"></i>
+                        </div>
+                    {% endif %}
+
+                    <span class="course-price-badge {% if course.price == 0 %}is-free{% endif %}">
+                        {% if course.price == 0 %}
+                            Free
+                        {% else %}
+                            ${{ course.price }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-4 d-flex flex-column">
+                    <!-- Instructor Meta -->
+                    {% if course.instructor %}
+                    <div class="d-flex align-items-center gap-2 mb-2 text-muted small">
+                        <i class="bi bi-person-badge text-teal"></i>
+                        <span class="fw-semibold">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</span>
+                        {% if course.instructor.specialization %}
+                            <span class="text-muted">· {{ course.instructor.specialization }}</span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="d-flex align-items-center gap-2 mb-2 text-muted small">
+                        <i class="bi bi-mortarboard text-teal"></i>
+                        <span class="fw-semibold">CourseSphere Faculty</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Title -->
+                    <h5 class="card-title fw-bold text-dark mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.8rem;">
+                        {{ course.course_title }}
+                    </h5>
+
+                    <!-- Description -->
+                    <p class="card-text text-muted small flex-grow-1 mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ course.description }}
+                    </p>
+
+                    <!-- Meta Info Row -->
+                    <div class="d-flex align-items-center justify-content-between text-muted small pt-3 border-top mb-3">
+                        <span>
+                            <i class="bi bi-calendar3 me-1 text-teal"></i>
+                            {{ course.created_date|date:"M d, Y" }}
+                        </span>
+                        <span>
+                            <i class="bi bi-check2-circle me-1 text-success"></i> Verified
+                        </span>
+                    </div>
+
+                    <!-- View Details Button -->
+                    <a href="{% url 'student:course_detail' course.id %}" class="btn btn-brand btn-brand-student w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5 px-3 bg-white rounded-4 border p-5 shadow-sm animate-fade-in">
+        <div class="mb-3 text-teal" style="font-size: 3.5rem;">
+            <i class="bi bi-inbox-fill"></i>
+        </div>
+        <h4 class="fw-bold text-dark mb-2">No Courses Found</h4>
+        <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
+            {% if search_query or selected_category %}
+                No courses matched your current filter or search criteria. Try using different keywords or clearing your filters.
+            {% else %}
+                There are currently no courses published in the catalog. Please check back soon!
+            {% endif %}
+        </p>
+        {% if search_query or selected_category %}
+            <a href="{% url 'student:course_list' %}" class="btn btn-brand btn-brand-student rounded-pill px-4">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
+            </a>
+        {% else %}
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-house me-1"></i> Return Home
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

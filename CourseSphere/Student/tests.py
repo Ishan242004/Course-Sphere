@@ -1,8 +1,9 @@
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from Student.models import Student
-from Instructor.models import Instructor
+from Instructor.models import Instructor, Course
 
 
 class StudentAuthTests(TestCase):
@@ -81,3 +82,107 @@ class StudentAuthTests(TestCase):
 
         response = self.client.get(self.logout_url)
         self.assertRedirects(response, self.login_url)
+
+
+class CourseListingTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.course_list_url = reverse('student:course_list')
+
+        # Create instructor for courses
+        self.instructor_user = User.objects.create_user(
+            username='dr_watson',
+            email='watson@example.com',
+            password='Password123',
+            first_name='John',
+            last_name='Watson'
+        )
+        self.instructor = Instructor.objects.create(
+            user=self.instructor_user,
+            specialization='Full Stack Development'
+        )
+
+        # Create sample courses dynamically in database
+        self.course1 = Course.objects.create(
+            course_title="Modern Python Bootcamp",
+            category="Programming",
+            price=Decimal("19.99"),
+            description="Master Python from basics to advanced object-oriented programming concepts.",
+            instructor=self.instructor
+        )
+        self.course2 = Course.objects.create(
+            course_title="UI/UX Design Masterclass",
+            category="Design",
+            price=Decimal("0.00"),
+            description="Learn how to design modern web interfaces using Figma and user research.",
+            instructor=self.instructor
+        )
+
+    def test_course_list_page_status_code(self):
+        """Course listing page returns HTTP 200."""
+        response = self.client.get(self.course_list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'Student/course_list.html')
+
+    def test_course_list_displays_courses_dynamically(self):
+        """Courses created in the database are rendered dynamically with title, category, price, description."""
+        response = self.client.get(self.course_list_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Course 1 verification
+        self.assertContains(response, "Modern Python Bootcamp")
+        self.assertContains(response, "Programming")
+        self.assertContains(response, "$19.99")
+        self.assertContains(response, "Master Python from basics")
+
+        # Course 2 verification (Free price)
+        self.assertContains(response, "UI/UX Design Masterclass")
+        self.assertContains(response, "Design")
+        self.assertContains(response, "Free")
+        self.assertContains(response, "Learn how to design modern web interfaces")
+
+        # View Details button verification
+        detail_url_1 = reverse('student:course_detail', args=[self.course1.id])
+        detail_url_2 = reverse('student:course_detail', args=[self.course2.id])
+        self.assertContains(response, detail_url_1)
+        self.assertContains(response, detail_url_2)
+        self.assertContains(response, "View Details")
+
+    def test_course_list_empty_state(self):
+        """When no courses exist in the database, the empty state is displayed."""
+        Course.objects.all().delete()
+        response = self.client.get(self.course_list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No Courses Found")
+
+    def test_course_list_filter_by_category(self):
+        """Filtering by category only returns matching courses."""
+        response = self.client.get(self.course_list_url, {'category': 'Programming'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Modern Python Bootcamp")
+        self.assertNotContains(response, "UI/UX Design Masterclass")
+
+    def test_course_list_search_query(self):
+        """Searching by keyword returns only matching courses."""
+        response = self.client.get(self.course_list_url, {'q': 'Figma'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "UI/UX Design Masterclass")
+        self.assertNotContains(response, "Modern Python Bootcamp")
+
+    def test_course_detail_view_success(self):
+        """Clicking View Details navigates to the course detail page."""
+        detail_url = reverse('student:course_detail', args=[self.course1.id])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'Student/course_detail.html')
+        self.assertContains(response, "Modern Python Bootcamp")
+        self.assertContains(response, "Programming")
+        self.assertContains(response, "$19.99")
+        self.assertContains(response, "John Watson")
+
+    def test_course_detail_view_404_invalid_id(self):
+        """Nonexistent course id returns 404."""
+        invalid_url = reverse('student:course_detail', args=[99999])
+        response = self.client.get(invalid_url)
+        self.assertEqual(response.status_code, 404)
+

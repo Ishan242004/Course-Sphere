@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard — CourseSphere{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
+        <div>
+            <div class="d-inline-flex align-items-center gap-2 badge badge-admin mb-2">
+                <i class="bi bi-shield-check"></i> System Administrator
+            </div>
+            <h1 class="display-6 fw-extrabold text-dark mb-1">
+                Admin Management Cockpit
+            </h1>
+            <p class="text-muted mb-0">
+                Welcome back, <strong>{{ user.username }}</strong>. Centralized overview of CourseSphere platform metrics.
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'admin:index' %}" class="btn btn-dark rounded-pill px-4 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+                <i class="bi bi-gear-fill"></i> Open Django Admin Site &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white" style="border-left: 5px solid #0d9488 !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted fw-bold small text-uppercase">Total Students</span>
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(13, 148, 136, 0.12); color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        <i class="bi bi-backpack2-fill"></i>
+                    </div>
+                </div>
+                <div class="display-5 fw-extrabold text-dark mb-1">{{ stats.total_students }}</div>
+                <span class="text-muted small">Registered learners</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white" style="border-left: 5px solid #7c3aed !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted fw-bold small text-uppercase">Total Instructors</span>
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(124, 58, 237, 0.12); color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        <i class="bi bi-person-video3"></i>
+                    </div>
+                </div>
+                <div class="display-5 fw-extrabold text-dark mb-1">{{ stats.total_instructors }}</div>
+                <span class="text-muted small">Faculty members</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white" style="border-left: 5px solid #2563eb !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted fw-bold small text-uppercase">Total Courses</span>
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(37, 99, 235, 0.12); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        <i class="bi bi-collection-play-fill"></i>
+                    </div>
+                </div>
+                <div class="display-5 fw-extrabold text-dark mb-1">{{ stats.total_courses }}</div>
+                <span class="text-muted small">Published curriculum</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Courses Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="bi bi-journal-check me-2 text-primary"></i> Recently Added Courses
+            </h5>
+            <a href="{% url 'student:course_list' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                View All in Catalog
+            </a>
+        </div>
+
+        {% if stats.recent_courses %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Instructor</th>
+                        <th>Created Date</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in stats.recent_courses %}
+                    <tr>
+                        <td class="fw-bold">{{ c.course_title }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ c.category }}</span></td>
+                        <td>
+                            {% if c.price == 0 %}
+                                <span class="badge bg-success-subtle text-success">Free</span>
+                            {% else %}
+                                ${{ c.price }}
+                            {% endif %}
+                        </td>
+                        <td>{{ c.instructor.user.username|default:"Unassigned" }}</td>
+                        <td class="text-muted small">{{ c.created_date|date:"M d, Y" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'student:course_detail' c.id %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No courses published yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

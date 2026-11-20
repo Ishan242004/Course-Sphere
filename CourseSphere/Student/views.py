@@ -1,14 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from .forms import (
     StudentRegisterForm, StudentLoginForm,
     ForgotPasswordEmailForm, OTPVerifyForm, ResetPasswordForm,
 )
 from .models import Student
+from Instructor.models import Course
 from CourseSphere.otp_service import send_otp, verify_otp, clear_otp_session
 
 
@@ -169,3 +171,47 @@ def student_reset_password(request):
         form = ResetPasswordForm()
 
     return render(request, 'Student/reset_password.html', {'form': form})
+
+
+# ─── Course Listing & Detail Views ──────────────────────────────────────────
+
+def course_list(request):
+    """
+    Display all available courses dynamically from the database.
+    Supports optional search query and category filtering.
+    """
+    courses = Course.objects.all().order_by('-created_date')
+
+    search_query = request.GET.get('q', '').strip()
+    selected_category = request.GET.get('category', '').strip()
+
+    if search_query:
+        courses = courses.filter(
+            Q(course_title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(category__icontains=search_query)
+        )
+
+    if selected_category:
+        courses = courses.filter(category__iexact=selected_category)
+
+    # Get distinct categories from database for filter pills
+    categories = Course.objects.values_list('category', flat=True).distinct().order_by('category')
+
+    context = {
+        'courses': courses,
+        'categories': categories,
+        'search_query': search_query,
+        'selected_category': selected_category,
+        'total_courses': courses.count(),
+    }
+    return render(request, 'Student/course_list.html', context)
+
+
+def course_detail(request, course_id):
+    """
+    Display detailed information for a single course.
+    """
+    course = get_object_or_404(Course, id=course_id)
+    return render(request, 'Student/course_detail.html', {'course': course})
+
