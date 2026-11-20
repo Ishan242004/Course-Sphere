@@ -4,22 +4,23 @@
 {% block title %}{{ course.course_title }} — CourseSphere{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="glass-page-wrapper">
+  <div class="container">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-muted">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'student:course_list' %}" class="text-decoration-none text-muted">Courses</a></li>
-            <li class="breadcrumb-item active text-teal fw-semibold" aria-current="page">{{ course.course_title|truncatechars:35 }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student:course_list' %}">Courses</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ course.course_title|truncatechars:35 }}</li>
         </ol>
     </nav>
 
     <div class="row g-4">
         <!-- Main Course Content -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+            <div class="glass-inner-card mb-4">
                 <!-- Course Hero Image Banner -->
-                <div style="height: 340px; background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <div style="height: 320px; background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 20px 20px 0 0;">
                     {% if course.course_image %}
                         <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
@@ -27,51 +28,47 @@
                             <i class="bi bi-journal-richtext" style="font-size: 5rem; opacity: 0.85;"></i>
                         </div>
                     {% endif %}
-                    <span class="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 text-white px-3 py-2 rounded-pill fs-6">
-                        <i class="bi bi-tag-fill me-1 text-teal"></i>{{ course.category }}
+                    <span class="position-absolute top-0 start-0 m-3 badge px-3 py-2 rounded-pill fs-6" style="background:rgba(10,15,30,0.75); color:#38bdf8;">
+                        <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
                     </span>
                 </div>
 
                 <!-- Course Title & Description -->
-                <div class="card-body p-4 p-md-5">
-                    <div class="d-flex flex-wrap align-items-center gap-3 text-muted small mb-3">
-                        <span><i class="bi bi-calendar3 me-1 text-teal"></i> Published: {{ course.created_date|date:"F d, Y" }}</span>
-                        <span><i class="bi bi-globe me-1 text-teal"></i> English</span>
-                        <span><i class="bi bi-award me-1 text-teal"></i> Certificate of Completion</span>
+                <div class="p-4 p-md-5">
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-3 small" style="color:rgba(255,255,255,0.5);">
+                        <span><i class="bi bi-calendar3 me-1" style="color:#38bdf8;"></i> Published: {{ course.created_date|date:"F d, Y" }}</span>
+                        <span><i class="bi bi-globe me-1" style="color:#38bdf8;"></i> English</span>
+                        <span><i class="bi bi-award me-1" style="color:#38bdf8;"></i> Certificate of Completion</span>
                     </div>
 
-                    <h1 class="display-6 fw-extrabold text-dark mb-4">
-                        {{ course.course_title }}
-                    </h1>
+                    <h1 class="glass-page-title display-6 mb-4">{{ course.course_title }}</h1>
 
-                    <h4 class="fw-bold text-dark mb-3">About this Course</h4>
-                    <p class="text-secondary lead" style="font-size: 1.05rem; line-height: 1.8; white-space: pre-line;">
+                    <h4 class="fw-bold mb-3" style="color:#e2e8f0;">About this Course</h4>
+                    <p style="color:rgba(255,255,255,0.65); font-size: 1.05rem; line-height: 1.8; white-space: pre-line;">
                         {{ course.description }}
                     </p>
 
-                    <hr class="my-4">
+                    <hr style="border-color:rgba(255,255,255,0.1); margin:1.5rem 0;">
 
-                    <!-- What you will learn highlight box -->
-                    <div class="p-4 rounded-4" style="background-color: var(--cs-student-light); border: 1px solid rgba(13, 148, 136, 0.2);">
-                        <h5 class="fw-bold mb-3" style="color: var(--cs-student);">
-                            <i class="bi bi-check2-circle me-1"></i> Course Highlights
-                        </h5>
-                        <div class="row g-2">
+                    <!-- Highlights Box -->
+                    <div class="glass-highlight-box">
+                        <h5><i class="bi bi-check2-circle me-1"></i> Course Highlights</h5>
+                        <div class="row g-2 mt-1">
                             <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg text-teal fs-5"></i>
-                                <span class="small text-slate">Self-paced flexible schedule</span>
+                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
+                                <span class="small" style="color:rgba(255,255,255,0.72);">Self-paced flexible schedule</span>
                             </div>
                             <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg text-teal fs-5"></i>
-                                <span class="small text-slate">Full lifetime access to resources</span>
+                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
+                                <span class="small" style="color:rgba(255,255,255,0.72);">Full lifetime access to resources</span>
                             </div>
                             <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg text-teal fs-5"></i>
-                                <span class="small text-slate">Direct mentor Q&A support</span>
+                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
+                                <span class="small" style="color:rgba(255,255,255,0.72);">Direct mentor Q&A support</span>
                             </div>
                             <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg text-teal fs-5"></i>
-                                <span class="small text-slate">Downloadable learning material</span>
+                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
+                                <span class="small" style="color:rgba(255,255,255,0.72);">Downloadable learning material</span>
                             </div>
                         </div>
                     </div>
@@ -79,77 +76,77 @@
             </div>
         </div>
 
-        <!-- Course Sidebar (Price & Instructor) -->
+        <!-- Course Sidebar -->
         <div class="col-lg-4">
-            <!-- Purchase / Enrollment Card -->
-            <div class="card border-0 shadow-lg rounded-4 p-4 mb-4 bg-white sticky-top" style="top: 90px;">
+            <div class="glass-sidebar-card sticky-top" style="top: 90px;">
                 <div class="mb-3">
-                    <span class="text-muted small text-uppercase fw-bold letter-spacing">Enrollment Fee</span>
-                    <div class="display-5 fw-extrabold text-dark mt-1">
+                    <span class="small text-uppercase fw-bold d-block mb-1" style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Enrollment Fee</span>
+                    <div class="display-5 fw-extrabold mt-1">
                         {% if course.price == 0 %}
-                            <span class="text-success">Free</span>
+                            <span style="color:#4ade80;">Free</span>
                         {% else %}
-                            ${{ course.price }}
+                            <span style="color:#f1f5f9;">${{ course.price }}</span>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mb-4">
                     {% if user.is_authenticated and user.student_profile %}
-                        <button class="btn btn-brand btn-brand-student py-3 fw-bold fs-6">
+                        <button class="glass-btn-primary" style="border:none; padding:0.85rem 1rem; border-radius:12px; font-size:1rem; font-weight:700;">
                             <i class="bi bi-lightning-charge-fill me-1"></i> Enroll in Course
                         </button>
                     {% elif user.is_authenticated %}
-                        <a href="{% url 'student:course_list' %}" class="btn btn-outline-secondary py-2">
+                        <a href="{% url 'student:course_list' %}" class="glass-pill-btn justify-content-center">
                             Browsing as {{ user.username }}
                         </a>
                     {% else %}
-                        <a href="{% url 'student:student_login' %}?next={% url 'student:course_detail' course.id %}" class="btn btn-brand btn-brand-student py-3 fw-bold fs-6">
+                        <a href="{% url 'student:student_login' %}?next={% url 'student:course_detail' course.id %}" class="glass-btn-primary d-block text-center text-decoration-none" style="padding:0.85rem 1rem; border-radius:12px; font-weight:700;">
                             <i class="bi bi-box-arrow-in-right me-1"></i> Login to Enroll
                         </a>
-                        <a href="{% url 'student:student_register' %}" class="btn btn-outline-secondary py-2 rounded-3 fw-semibold">
+                        <a href="{% url 'student:student_register' %}" class="glass-pill-btn justify-content-center">
                             Create Free Student Account
                         </a>
                     {% endif %}
                 </div>
 
                 <!-- Instructor Info Box -->
-                <div class="p-3 rounded-3 bg-light border mb-3">
-                    <span class="text-muted small text-uppercase fw-bold d-block mb-2">Instructor</span>
+                <div class="glass-instructor-box mb-3">
+                    <span class="small text-uppercase fw-bold d-block mb-2" style="color:rgba(255,255,255,0.45); letter-spacing:0.07em;">Instructor</span>
                     {% if course.instructor %}
                         <div class="d-flex align-items-center gap-3">
-                            <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(124, 58, 237, 0.15); color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                            <div style="width:46px; height:46px; border-radius:50%; background:rgba(124,58,237,0.25); color:#c084fc; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                                 <i class="bi bi-person-fill"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-0 text-dark">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</h6>
-                                <p class="small text-muted mb-0">{{ course.instructor.specialization|default:"Lead Instructor" }}</p>
+                                <h6 class="fw-bold mb-0" style="color:#f1f5f9;">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</h6>
+                                <p class="small mb-0" style="color:rgba(255,255,255,0.5);">{{ course.instructor.specialization|default:"Lead Instructor" }}</p>
                             </div>
                         </div>
                         {% if course.instructor.bio %}
-                            <p class="small text-muted mt-2 mb-0 border-top pt-2">{{ course.instructor.bio|truncatewords:25 }}</p>
+                            <p class="small mt-2 mb-0 pt-2" style="color:rgba(255,255,255,0.45); border-top:1px solid rgba(255,255,255,0.1);">{{ course.instructor.bio|truncatewords:25 }}</p>
                         {% endif %}
                     {% else %}
                         <div class="d-flex align-items-center gap-3">
-                            <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(13, 148, 136, 0.15); color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                            <div style="width:46px; height:46px; border-radius:50%; background:rgba(13,148,136,0.2); color:#2dd4bf; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                                 <i class="bi bi-mortarboard-fill"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-0 text-dark">CourseSphere Academic Faculty</h6>
-                                <p class="small text-muted mb-0">Verified Course Content</p>
+                                <h6 class="fw-bold mb-0" style="color:#f1f5f9;">CourseSphere Academic Faculty</h6>
+                                <p class="small mb-0" style="color:rgba(255,255,255,0.5);">Verified Course Content</p>
                             </div>
                         </div>
                     {% endif %}
                 </div>
 
-                <!-- Back to list link -->
+                <!-- Back link -->
                 <div class="text-center pt-2">
-                    <a href="{% url 'student:course_list' %}" class="link-student small text-decoration-none">
+                    <a href="{% url 'student:course_list' %}" class="glass-link small">
                         <i class="bi bi-arrow-left me-1"></i> Back to All Courses
                     </a>
                 </div>
             </div>
         </div>
     </div>
+  </div>
 </div>
 {% endblock %}

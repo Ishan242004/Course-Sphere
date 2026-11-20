@@ -440,33 +440,72 @@ a.link-admin:hover {
     box-shadow: 0 2px 6px rgba(107, 33, 168, 0.08);
 }
 
-/* Navbar */
+/* Glass Navbar */
 .cs-navbar {
-    background: #ffffff;
-    border-bottom: 1px solid var(--cs-border);
-    padding: 0.85rem 1.5rem;
+    background: rgba(10, 15, 30, 0.85) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    padding: 0.85rem 1.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
 }
 
 .cs-brand {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.65rem;
     font-weight: 800;
-    font-size: 1.25rem;
-    color: var(--cs-dark);
+    font-size: 1.3rem;
+    color: #ffffff !important;
     text-decoration: none;
+    letter-spacing: -0.01em;
 }
 
 .cs-brand .brand-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
     color: #fff;
-    border-radius: 10px;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+}
+
+.cs-brand .brand-accent {
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.cs-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.5rem 1rem !important;
+    border-radius: 9999px;
+    transition: all 0.2s ease;
+}
+
+.cs-navbar .nav-link:hover,
+.cs-navbar .nav-link.active {
+    color: #38bdf8 !important;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.cs-navbar .navbar-toggler {
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.4rem 0.65rem;
+}
+
+.cs-navbar .navbar-toggler-icon {
+    filter: invert(1);
 }
 
 /* Dashboard styles */
@@ -672,4 +711,585 @@ a.link-admin:hover {
     background-color: #f1f5f9;
     color: #0f172a;
     border: 1px solid rgba(15, 23, 42, 0.25);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   GLASSMORPHISM LOGIN & REGISTER UI (with Bookshelf Background)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+body:has(.glass-login-wrapper) {
+    background-color: #0a0f1e !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body:has(.glass-login-wrapper) main {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.glass-login-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    background: url('/static/images/booksbookshed.png') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    position: relative;
+    overflow-x: hidden;
+    margin: 0 !important;
+}
+
+.glass-login-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 15, 30, 0.62);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 0;
+}
+
+.glass-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    padding: 2.75rem 2.25rem 2.25rem;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65),
+        0 0 50px rgba(56, 189, 248, 0.16),
+        inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.glass-card-wide {
+    max-width: 720px !important;
+    padding: 2.75rem 2.5rem 2.25rem;
+}
+
+.glass-card .form-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 0.01em;
+}
+
+.glass-card #password-match-feedback {
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0.35rem;
+}
+
+.glass-card textarea.form-control {
+    height: auto !important;
+    min-height: 90px !important;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+}
+
+.glass-card .input-group-custom {
+    position: relative;
+    width: 100%;
+}
+
+.glass-card .form-control {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 14px !important;
+    color: #ffffff !important;
+    height: 52px !important;
+    font-size: 0.95rem !important;
+    padding-left: 2.9rem !important;
+    padding-right: 2.9rem !important;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease !important;
+}
+
+.glass-card .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.glass-card .form-control:focus {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.28) !important;
+    color: #ffffff !important;
+}
+
+.glass-card .input-icon {
+    position: absolute;
+    left: 1.1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: 1.15rem;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.glass-card .btn-toggle-password {
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: 1.15rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    z-index: 4;
+}
+
+.glass-card .btn-toggle-password:hover {
+    color: #ffffff !important;
+}
+
+.glass-btn-primary {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45) !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+}
+
+.glass-btn-primary:hover {
+    filter: brightness(1.1) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 10px 28px rgba(37, 99, 235, 0.55) !important;
+    color: #ffffff !important;
+}
+
+.glass-btn-instructor {
+    background: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%) !important;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45) !important;
+}
+
+.glass-btn-instructor:hover {
+    box-shadow: 0 10px 28px rgba(124, 58, 237, 0.55) !important;
+}
+
+.glass-btn-admin {
+    background: linear-gradient(135deg, #475569 0%, #0f172a 100%) !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.45) !important;
+}
+
+.glass-btn-admin:hover {
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.55) !important;
+}
+
+.glass-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.4rem 0 1.25rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.glass-divider::before,
+.glass-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-divider span {
+    padding: 0 0.85rem;
+}
+
+.glass-link {
+    color: #38bdf8 !important;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.glass-link:hover {
+    color: #7dd3fc !important;
+    text-decoration: underline !important;
+}
+
+.glass-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1.75rem;
+    border-radius: 9999px;
+    border: 1.5px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff !important;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.glass-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.6);
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* =====================================================
+   GLASS PAGE WRAPPER — Interior Pages (non-auth)
+   ===================================================== */
+.glass-page-wrapper {
+    background: #090d16;
+    min-height: 100vh;
+    color: #e2e8f0;
+    padding: 2.5rem 0 4rem;
+}
+
+.glass-page-wrapper .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.55) !important;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.glass-page-wrapper .breadcrumb-item a:hover {
+    color: #38bdf8 !important;
+}
+
+.glass-page-wrapper .breadcrumb-item.active {
+    color: #38bdf8 !important;
+    font-weight: 600;
+}
+
+.glass-page-wrapper .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Interior frosted glass content card */
+.glass-inner-card {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 20px;
+    color: #e2e8f0;
+    overflow: hidden;
+}
+
+.glass-inner-card .card-body {
+    background: transparent;
+}
+
+/* Search / filter bar on dark bg */
+.glass-search-bar {
+    background: rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.13) !important;
+    border-radius: 16px !important;
+}
+
+.glass-search-bar .form-control,
+.glass-search-bar .form-select {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
+    border-radius: 10px !important;
+}
+
+.glass-search-bar .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.glass-search-bar .form-control:focus,
+.glass-search-bar .form-select:focus {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+    color: #fff !important;
+}
+
+.glass-search-bar .form-select option {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+/* Category filter pills on dark bg */
+.glass-filter-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.72) !important;
+    transition: all 0.18s ease;
+    backdrop-filter: blur(8px);
+}
+
+.glass-filter-pill:hover,
+.glass-filter-pill.active {
+    background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+    border-color: transparent;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    transform: translateY(-1px);
+}
+
+/* Course card — dark glass style */
+.glass-course-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    color: #e2e8f0;
+}
+
+.glass-course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.glass-course-card .card-body {
+    background: transparent;
+}
+
+.glass-course-card .card-title {
+    color: #f1f5f9 !important;
+}
+
+.glass-course-card .text-muted,
+.glass-course-card small {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.glass-course-card .border-top {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Stat card — glass dark */
+.glass-stat-card {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 18px;
+    padding: 1.5rem;
+    color: #e2e8f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.glass-stat-card .display-5 {
+    color: #f1f5f9 !important;
+}
+
+/* Glass table */
+.glass-table {
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.glass-table thead th {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    padding: 0.9rem 1rem;
+}
+
+.glass-table tbody tr {
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    transition: background 0.15s ease;
+}
+
+.glass-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+.glass-table td {
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    vertical-align: middle;
+}
+
+/* Badge count pill on dark bg */
+.glass-count-pill {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #38bdf8 !important;
+    border-radius: 9999px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+/* Page heading gradient text */
+.glass-page-title {
+    color: #f1f5f9;
+    font-weight: 800;
+}
+
+.glass-page-subtitle {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* Sidebar sticky card on detail page */
+.glass-sidebar-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 1.75rem;
+    color: #e2e8f0;
+}
+
+.glass-sidebar-card .display-5 {
+    color: #f1f5f9 !important;
+}
+
+.glass-sidebar-card .text-muted {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Instructor info box inside sidebar */
+.glass-instructor-box {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+/* Highlight / learn box on dark bg */
+.glass-highlight-box {
+    background: rgba(13, 148, 136, 0.12);
+    border: 1px solid rgba(13, 148, 136, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.glass-highlight-box h5 {
+    color: #2dd4bf !important;
+}
+
+.glass-highlight-box .text-slate {
+    color: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* Empty state card on dark bg */
+.glass-empty-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.glass-empty-card h4 {
+    color: #f1f5f9 !important;
+}
+
+/* Admin badge pill on dark */
+.glass-admin-badge {
+    background: rgba(100, 116, 139, 0.2);
+    border: 1px solid rgba(100, 116, 139, 0.4);
+    color: #94a3b8 !important;
+    border-radius: 9999px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Force body bg for interior pages */
+body:has(.glass-page-wrapper) {
+    background: #090d16 !important;
+}
+
+/* =====================================================
+   HOME PAGE GLASSMORPHISM
+   ===================================================== */
+.home-hero-wrapper {
+    min-height: calc(100vh - 70px);
+    width: 100%;
+    background: url('/static/images/booksbookshed.png') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+}
+
+.home-hero-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 15, 30, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 0;
+}
+
+.home-hero-wrapper > .container {
+    position: relative;
+    z-index: 1;
+}
+
+.glass-card-home {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 2.25rem;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.glass-card-home:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.cs-footer {
+    background: #060911 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+body:has(.home-hero-wrapper) {
+    background: #060911 !important;
 }

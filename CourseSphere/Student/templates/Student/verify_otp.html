@@ -4,36 +4,26 @@
 {% block title %}Verify OTP — Student | CourseSphere{% endblock %}
 
 {% block navbar %}{% endblock %}
+{% block messages %}{% endblock %}
+{% block footer %}{% endblock %}
 
 {% block content %}
-<div class="auth-wrapper theme-student">
-    <div class="auth-card animate-fade-in">
+<div class="glass-login-wrapper">
+    <div class="glass-card animate-fade-in" style="max-width:420px;">
 
-        <!-- Role Switcher Tabs -->
-        <div class="px-4 pt-4">
-            <div class="role-switcher">
-                <a href="{% url 'student:student_login' %}" class="role-switch-btn active-student">
-                    <span class="role-icon">🎓</span> Student
-                </a>
-                <a href="{% url 'instructor:instructor_login' %}" class="role-switch-btn inactive">
-                    <span class="role-icon">🧑‍🏫</span> Instructor
-                </a>
+        <!-- Icon Header -->
+        <div class="text-center mb-3">
+            <div style="width:64px; height:64px; border-radius:50%; background:rgba(56,189,248,0.15); border:1.5px solid rgba(56,189,248,0.4); display:inline-flex; align-items:center; justify-content:center; font-size:1.9rem; margin-bottom:0.75rem;">
+                📩
             </div>
-        </div>
-
-        <!-- Header -->
-        <div class="auth-header pt-1">
-            <div class="mb-2">
-                <span style="font-size:2rem;">📩</span>
-            </div>
-            <h2>Enter OTP</h2>
-            <p class="mb-0">We sent a 6-digit OTP to</p>
-            <p><strong class="text-student">{{ email }}</strong></p>
+            <h2 style="color:#fff; font-weight:800; font-size:1.6rem; margin-bottom:0.3rem;">Enter OTP</h2>
+            <p style="color:rgba(255,255,255,0.55); font-size:0.88rem; margin-bottom:0;">We sent a 6-digit OTP to</p>
+            <p style="color:#38bdf8; font-weight:700; font-size:0.95rem;">{{ email }}</p>
         </div>
 
         <!-- Messages -->
         {% if messages %}
-        <div class="px-4">
+        <div class="mb-3">
             {% for msg in messages %}
             <div class="alert alert-{{ msg.tags }} py-2 px-3 small rounded-3 mb-2">
                 <i class="bi bi-info-circle me-1"></i>{{ msg }}
@@ -42,42 +32,32 @@
         </div>
         {% endif %}
 
-        <!-- Body Form -->
-        <div class="auth-body">
-            <form method="POST" action="{% url 'student:student_verify_otp' %}" class="auth-form" novalidate>
-                {% csrf_token %}
+        <!-- Form -->
+        <form method="POST" action="{% url 'student:student_verify_otp' %}" novalidate>
+            {% csrf_token %}
 
-                <!-- OTP Input -->
-                <div class="mb-4">
-                    <label for="{{ form.otp.id_for_label }}" class="form-label text-center d-block">OTP Code</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
-                        {{ form.otp }}
-                    </div>
-                    {% if form.otp.errors %}
-                    <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.otp.errors.0 }}</div>
-                    {% endif %}
-                    <div class="text-muted small mt-2 text-center">OTP is valid for 10 minutes</div>
-                </div>
+            <label for="{{ form.otp.id_for_label }}" style="color:rgba(255,255,255,0.7); font-size:0.85rem; font-weight:600; display:block; margin-bottom:0.4rem; text-align:center;">OTP Code</label>
+            <div class="input-group-custom mb-1">
+                <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
+                {{ form.otp }}
+            </div>
+            {% if form.otp.errors %}
+            <div class="field-error mb-2"><i class="bi bi-exclamation-triangle"></i> {{ form.otp.errors.0 }}</div>
+            {% endif %}
+            <p style="color:rgba(255,255,255,0.4); font-size:0.8rem; text-align:center; margin-bottom:1.25rem;">OTP is valid for 10 minutes</p>
 
-                <!-- Verify Button -->
-                <button type="submit" name="verify" class="btn btn-brand btn-brand-student w-100 mb-3">
-                    <i class="bi bi-check-circle me-1"></i> Verify OTP
-                </button>
-
-                <!-- Resend Button -->
-                <button type="submit" name="resend" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-arrow-repeat me-1"></i> Resend OTP
-                </button>
-            </form>
-        </div>
+            <button type="submit" name="verify" class="glass-btn-primary w-100 mb-3" style="border:none; padding:0.8rem; border-radius:12px; font-size:1rem; font-weight:700;">
+                <i class="bi bi-check-circle me-1"></i> Verify OTP
+            </button>
+            <button type="submit" name="resend" class="glass-pill-btn w-100 justify-content-center" style="display:flex;">
+                <i class="bi bi-arrow-repeat me-1"></i> Resend OTP
+            </button>
+        </form>
 
         <!-- Footer -->
-        <div class="auth-footer py-3 px-3 text-center">
-            <a href="{% url 'student:student_forgot_password' %}" class="link-student">
-                ← Change email address
-            </a>
-        </div>
+        <p class="text-center mt-4 mb-0">
+            <a href="{% url 'student:student_forgot_password' %}" class="glass-link" style="font-size:0.85rem;">← Change email address</a>
+        </p>
     </div>
 </div>
 {% endblock %}

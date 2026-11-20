@@ -181,7 +181,7 @@ class StudentLoginForm(forms.Form):
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your username or email',
+            'placeholder': 'Username or Email',
             'autofocus': True
         })
     )

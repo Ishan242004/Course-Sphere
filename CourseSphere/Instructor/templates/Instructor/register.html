@@ -4,168 +4,206 @@
 {% block title %}Instructor Registration - CourseSphere{% endblock %}
 
 {% block navbar %}{% endblock %}
+{% block messages %}{% endblock %}
 
 {% block content %}
-<div class="auth-wrapper theme-instructor">
-    <div class="auth-card auth-card-wide animate-fade-in">
-        <!-- Role Switcher Tabs (From Screenshot) -->
-        <div class="px-4 pt-4">
-            <div class="role-switcher">
-                <a href="{% url 'student:student_register' %}" class="role-switch-btn inactive">
-                    <span class="role-icon">🎓</span> Student
-                </a>
-                <a href="{% url 'instructor:instructor_register' %}" class="role-switch-btn active-instructor">
-                    <span class="role-icon">🧑‍🏫</span> Instructor
-                </a>
+<div class="glass-login-wrapper">
+    <div class="glass-card glass-card-wide animate-fade-in">
+        <!-- Top Icon: Teacher/Educator -->
+        <div class="text-center mb-3">
+            <div class="d-inline-flex align-items-center justify-content-center"
+                style="font-size: 3.6rem; color: #ffffff; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));">
+                <i class="bi bi-person-video3"></i>
             </div>
         </div>
 
-        <!-- Header -->
-        <div class="auth-header pt-1">
-            <h2>Instructor Registration</h2>
-            <p>Share your knowledge, teach students worldwide, and create courses</p>
+        <!-- Heading -->
+        <h2 class="text-center text-white fw-bold mb-2" style="font-size: 1.85rem; letter-spacing: -0.02em;">
+            Instructor Registration
+        </h2>
+        <p class="text-center text-white-50 mb-4" style="font-size: 0.92rem; line-height: 1.4;">
+            Join CourseSphere to create courses, mentor students, and share your expertise
+        </p>
+
+        <!-- Django Flash Messages -->
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div
+                class="alert alert-{{ message.tags|default:'info' }} py-2 px-3 small rounded-3 mb-2 border-0 {% if message.tags == 'error' or message.tags == 'danger' %}bg-danger{% elif message.tags == 'success' %}bg-success{% else %}bg-primary{% endif %} text-white bg-opacity-75">
+                <i class="bi bi-info-circle me-1"></i> {{ message }}
+            </div>
+            {% endfor %}
         </div>
+        {% endif %}
 
-        <!-- Body Form -->
-        <div class="auth-body">
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
-                    {% for error in form.non_field_errors %}
-                        <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+        <!-- Form Error Alert -->
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3 bg-danger text-white border-0 bg-opacity-75">
+            {% for error in form.non_field_errors %}
+            <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-            <form method="POST" action="{% url 'instructor:instructor_register' %}" class="auth-form" novalidate>
-                {% csrf_token %}
+        <form method="POST" action="{% url 'instructor:instructor_register' %}" class="auth-form" novalidate>
+            {% csrf_token %}
 
-                <!-- Name Row -->
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-6">
-                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-person"></i></span>
-                            {{ form.first_name }}
-                        </div>
-                        {% if form.first_name.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.first_name.errors.0 }}</div>
-                        {% endif %}
+            <!-- Name Row -->
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">First Name *</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-person"></i></span>
+                        {{ form.first_name }}
                     </div>
-
-                    <div class="col-sm-6">
-                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-person"></i></span>
-                            {{ form.last_name }}
-                        </div>
-                        {% if form.last_name.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.last_name.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Username & Email Row -->
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-6">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username *</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-at"></i></span>
-                            {{ form.username }}
-                        </div>
-                        {% if form.username.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-envelope"></i></span>
-                            {{ form.email }}
-                        </div>
-                        {% if form.email.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.email.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Specialization & Phone Row -->
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-6">
-                        <label for="{{ form.specialization.id_for_label }}" class="form-label">Specialization / Subject *</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-briefcase"></i></span>
-                            {{ form.specialization }}
-                        </div>
-                        {% if form.specialization.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.specialization.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-telephone"></i></span>
-                            {{ form.phone }}
-                        </div>
-                        {% if form.phone.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.phone.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Bio / Background -->
-                <div class="mb-3">
-                    <label for="{{ form.bio.id_for_label }}" class="form-label">Professional Bio / Experience</label>
-                    {{ form.bio }}
-                    {% if form.bio.errors %}
-                        <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.bio.errors.0 }}</div>
+                    {% if form.first_name.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.first_name.errors.0 }}</div>
                     {% endif %}
                 </div>
 
-                <!-- Password Row -->
-                <div class="row g-3 mb-4">
-                    <div class="col-sm-6">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Password *</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-lock"></i></span>
-                            {{ form.password }}
-                            <button type="button" class="btn-toggle-password" title="Toggle password visibility">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                        {% if form.password.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.password.errors.0 }}</div>
-                        {% endif %}
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">Last Name *</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-person"></i></span>
+                        {{ form.last_name }}
                     </div>
+                    {% if form.last_name.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
 
-                    <div class="col-sm-6">
-                        <label for="{{ form.confirm_password.id_for_label }}" class="form-label">Confirm Password *</label>
-                        <div class="input-group-custom">
-                            <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
-                            {{ form.confirm_password }}
-                            <button type="button" class="btn-toggle-password" title="Toggle password visibility">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                        <div id="password-match-feedback" class="form-text small"></div>
-                        {% if form.confirm_password.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.confirm_password.errors.0 }}</div>
-                        {% endif %}
+            <!-- Username & Email Row -->
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">Username *</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-at"></i></span>
+                        {{ form.username }}
                     </div>
+                    {% if form.username.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.username.errors.0 }}</div>
+                    {% endif %}
                 </div>
 
-                <!-- Submit Button -->
-                <button type="submit" class="btn btn-brand btn-brand-instructor w-100">
-                    <i class="bi bi-person-check-fill"></i> Complete Registration
-                </button>
-            </form>
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">Email Address *</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-envelope"></i></span>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Specialization & Phone Row -->
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">Specialization / Subject *</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-briefcase"></i></span>
+                        {{ form.specialization }}
+                    </div>
+                    {% if form.specialization.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.specialization.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">Phone Number</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-telephone"></i></span>
+                        {{ form.phone }}
+                    </div>
+                    {% if form.phone.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Professional Bio -->
+            <div class="mb-3">
+                <label class="form-label text-white-50 small mb-1">Professional Bio / Experience</label>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.bio.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Password Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">Password *</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-lock"></i></span>
+                        {{ form.password }}
+                        <button type="button" class="btn-toggle-password" title="Toggle password visibility">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-sm-6">
+                    <label class="form-label text-white-50 small mb-1">Confirm Password *</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
+                        {{ form.confirm_password }}
+                        <button type="button" class="btn-toggle-password" title="Toggle password visibility">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div id="password-match-feedback" class="form-text small"></div>
+                    {% if form.confirm_password.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
+                        form.confirm_password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Submit Button: Purple gradient button for instructor -->
+            <button type="submit" class="glass-btn-primary glass-btn-instructor">
+                <i class="bi bi-arrow-right-circle-fill me-2 fs-5"></i> Complete Registration
+            </button>
+        </form>
+
+        <!-- OR Divider -->
+        <div class="glass-divider">
+            <span>OR</span>
         </div>
 
-        <!-- Footer: Only Login link when on Register page -->
-        <div class="auth-footer py-3 px-3 text-center">
-            <span class="text-muted">Already have an account?</span>
-            <a href="{% url 'instructor:instructor_login' %}" class="link-instructor ms-1">Log in as Instructor &rarr;</a>
+        <!-- Login Link -->
+        <div class="text-center mb-3">
+            <span class="text-white small">Already have an account?</span>
+            <a href="{% url 'instructor:instructor_login' %}" class="glass-link ms-1 small"
+                style="color: #c084fc !important;">Sign In to Instructor Account</a>
+        </div>
+
+        <!-- Admin Login Button -->
+        <div class="text-center">
+            <a href="{% url 'admin_portal:admin_login' %}" class="glass-pill-btn">
+                <i class="bi bi-shield-lock-fill me-1"></i> Admin Login
+            </a>
+        </div>
+
+        <!-- Student Switcher Link -->
+        <div class="text-center mt-3 pt-2">
+            <a href="{% url 'student:student_register' %}" class="text-white-50 small text-decoration-none">
+                Are you a student? <span class="text-white text-decoration-underline">Register as Student &rarr;</span>
+            </a>
         </div>
     </div>
 </div>
