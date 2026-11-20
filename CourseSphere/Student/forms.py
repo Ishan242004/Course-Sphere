@@ -110,6 +110,72 @@ class StudentRegisterForm(forms.ModelForm):
         return student
 
 
+class ForgotPasswordEmailForm(forms.Form):
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your registered email',
+            'autofocus': True,
+        })
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip()
+        if not User.objects.filter(email__iexact=email, student_profile__isnull=False).exists():
+            raise forms.ValidationError("No Student account found with this email address.")
+        return email.lower()
+
+
+class OTPVerifyForm(forms.Form):
+    otp = forms.CharField(
+        max_length=6,
+        min_length=6,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control text-center otp-input',
+            'placeholder': '• • • • • •',
+            'maxlength': '6',
+            'autocomplete': 'one-time-code',
+            'autofocus': True,
+        })
+    )
+
+    def clean_otp(self):
+        otp = self.cleaned_data.get('otp', '').strip()
+        if not otp.isdigit():
+            raise forms.ValidationError("OTP must contain digits only.")
+        return otp
+
+
+class ResetPasswordForm(forms.Form):
+    password = forms.CharField(
+        min_length=6,
+        required=True,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control password-input',
+            'placeholder': 'New password (at least 6 characters)',
+            'autofocus': True,
+        })
+    )
+    confirm_password = forms.CharField(
+        min_length=6,
+        required=True,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control confirm-password-input',
+            'placeholder': 'Re-enter new password',
+        })
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', "Passwords do not match.")
+        return cleaned_data
+
+
 class StudentLoginForm(forms.Form):
     username = forms.CharField(
         required=True,

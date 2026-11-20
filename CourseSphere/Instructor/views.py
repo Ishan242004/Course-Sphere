@@ -4,8 +4,12 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import InstructorRegisterForm, InstructorLoginForm
+from .forms import (
+    InstructorRegisterForm, InstructorLoginForm,
+    ForgotPasswordEmailForm, OTPVerifyForm, ResetPasswordForm,
+)
 from .models import Instructor
+from CourseSphere.otp_service import send_otp, verify_otp, clear_otp_session
 
 
 def instructor_register(request):
@@ -84,3 +88,84 @@ def instructor_dashboard(request):
 
     instructor = request.user.instructor_profile
     return render(request, 'Instructor/dashboard.html', {'instructor': instructor})
+
+
+# ─── Forgot Password Flow ────────────────────────────────────────────────────
+
+def instructor_forgot_password(request):
+    """Step 1: Enter email → send OTP."""
+    if request.method == 'POST':
+        form = ForgotPasswordEmailForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            sent = send_otp(request, email, role='Instructor')
+            if sent:
+                messages.success(
+                    request,
+                    f"OTP sent to {email}. Check your inbox (or the terminal if running locally)."
+                )
+            else:
+                messages.warning(
+                    request,
+                    "Could not send email — OTP printed in the server terminal instead."
+                )
+            return redirect('instructor:instructor_verify_otp')
+    else:
+        form = ForgotPasswordEmailForm()
+    return render(request, 'Instructor/forgot_password.html', {'form': form})
+
+
+def instructor_verify_otp(request):
+    """Step 2: Enter the 6-digit OTP."""
+    if not request.session.get('otp_email'):
+        messages.error(request, "Session expired. Please start over.")
+        return redirect('instructor:instructor_forgot_password')
+
+    if request.method == 'POST':
+        # Resend OTP button
+        if 'resend' in request.POST:
+            email = request.session.get('otp_email')
+            if email:
+                send_otp(request, email, role='Instructor')
+                messages.info(request, "A new OTP has been sent.")
+            return redirect('instructor:instructor_verify_otp')
+
+        form = OTPVerifyForm(request.POST)
+        if form.is_valid():
+            ok, reason = verify_otp(request, form.cleaned_data['otp'])
+            if ok:
+                messages.success(request, "OTP verified! Set your new password below.")
+                return redirect('instructor:instructor_reset_password')
+            else:
+                messages.error(request, reason)
+    else:
+        form = OTPVerifyForm()
+
+    email = request.session.get('otp_email', '')
+    return render(request, 'Instructor/verify_otp.html', {'form': form, 'email': email})
+
+
+def instructor_reset_password(request):
+    """Step 3: Set new password after OTP verified."""
+    if not request.session.get('otp_verified'):
+        messages.error(request, "Please verify your OTP first.")
+        return redirect('instructor:instructor_forgot_password')
+
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            email = request.session.get('otp_email')
+            try:
+                user = User.objects.get(email__iexact=email, instructor_profile__isnull=False)
+                user.set_password(form.cleaned_data['password'])
+                user.save()
+                clear_otp_session(request)
+                messages.success(request, "Password reset successful! You can now log in with your new password.")
+                return redirect('instructor:instructor_login')
+            except User.DoesNotExist:
+                messages.error(request, "User not found. Please start over.")
+                return redirect('instructor:instructor_forgot_password')
+    else:
+        form = ResetPasswordForm()
+
+    return render(request, 'Instructor/reset_password.html', {'form': form})

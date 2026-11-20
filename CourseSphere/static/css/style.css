@@ -485,3 +485,9 @@ a.link-instructor:hover {
 .animate-fade-in {
     animation: fadeIn 0.35s ease-out forwards;
 }
+/* OTP page email highlight */
+.text-student { color: #0d9488; font-weight: 600; }
+.text-instructor { color: #7c3aed; font-weight: 600; }
+
+/* OTP input large centered */
+.otp-input { font-size: 1.5rem; letter-spacing: 0.5em; text-align: center; font-weight: 700; }

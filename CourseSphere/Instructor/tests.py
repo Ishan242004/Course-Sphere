@@ -1,7 +1,10 @@
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib import admin
 from django.contrib.auth.models import User
-from Instructor.models import Instructor
+from django.core.exceptions import ValidationError
+from Instructor.models import Instructor, Course
 from Student.models import Student
 
 
@@ -70,3 +73,82 @@ class InstructorAuthTests(TestCase):
 
         response = self.client.get(self.logout_url)
         self.assertRedirects(response, self.login_url)
+
+
+class CourseModelTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='course_prof', email='prof@example.com', password='Password123')
+        self.instructor = Instructor.objects.create(user=self.user, specialization='Computer Science')
+
+    def test_create_course_with_required_fields(self):
+        """Create course with title, category, price, description."""
+        course = Course.objects.create(
+            course_title="Introduction to Python",
+            category="Programming",
+            price=Decimal("29.99"),
+            description="A comprehensive introduction to Python programming language.",
+            instructor=self.instructor
+        )
+        self.assertEqual(course.course_title, "Introduction to Python")
+        self.assertEqual(course.title, "Introduction to Python")
+        self.assertEqual(course.category, "Programming")
+        self.assertEqual(course.price, Decimal("29.99"))
+        self.assertTrue(course.created_date)
+        self.assertEqual(course.created_at, course.created_date)
+        self.assertEqual(str(course), "Introduction to Python")
+        self.assertIsNone(course.course_image.name)
+        self.assertEqual(course.instructor, self.instructor)
+
+    def test_create_course_using_aliases(self):
+        """Test aliases: title, image, created_at work in create, filter and properties."""
+        course = Course.objects.create(
+            title="Django Masterclass",
+            category="Web Development",
+            price=Decimal("49.99"),
+            description="Build scalable web apps with Django and Python."
+        )
+        self.assertEqual(course.course_title, "Django Masterclass")
+        self.assertEqual(course.title, "Django Masterclass")
+
+        # Test filter via alias
+        fetched = Course.objects.filter(title="Django Masterclass").first()
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, course.id)
+
+    def test_course_validation_negative_price(self):
+        """Price cannot be negative."""
+        course = Course(
+            course_title="Free Python",
+            category="Programming",
+            price=Decimal("-10.00"),
+            description="Valid description with enough length."
+        )
+        with self.assertRaises(ValidationError):
+            course.full_clean()
+
+    def test_course_validation_short_title(self):
+        """Title must be at least 3 characters."""
+        course = Course(
+            course_title="Py",
+            category="Programming",
+            price=Decimal("0.00"),
+            description="Valid description with enough length."
+        )
+        with self.assertRaises(ValidationError):
+            course.full_clean()
+
+    def test_course_validation_short_description(self):
+        """Description must be at least 10 characters."""
+        course = Course(
+            course_title="Valid Title",
+            category="Programming",
+            price=Decimal("0.00"),
+            description="Too short"
+        )
+        with self.assertRaises(ValidationError):
+            course.full_clean()
+
+    def test_course_registered_in_admin(self):
+        """Verify Course is registered in django.contrib.admin."""
+        self.assertTrue(admin.site.is_registered(Course))
+

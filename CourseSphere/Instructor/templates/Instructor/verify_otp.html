@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify OTP — Instructor | CourseSphere{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper theme-instructor">
+    <div class="auth-card animate-fade-in">
+
+        <!-- Role Switcher Tabs -->
+        <div class="px-4 pt-4">
+            <div class="role-switcher">
+                <a href="{% url 'student:student_login' %}" class="role-switch-btn inactive">
+                    <span class="role-icon">🎓</span> Student
+                </a>
+                <a href="{% url 'instructor:instructor_login' %}" class="role-switch-btn active-instructor">
+                    <span class="role-icon">🧑‍🏫</span> Instructor
+                </a>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="auth-header pt-1">
+            <div class="mb-2">
+                <span style="font-size:2rem;">📩</span>
+            </div>
+            <h2>Enter OTP</h2>
+            <p class="mb-0">We sent a 6-digit OTP to</p>
+            <p><strong class="text-instructor">{{ email }}</strong></p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="px-4">
+            {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags }} py-2 px-3 small rounded-3 mb-2">
+                <i class="bi bi-info-circle me-1"></i>{{ msg }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Body Form -->
+        <div class="auth-body">
+            <form method="POST" action="{% url 'instructor:instructor_verify_otp' %}" class="auth-form" novalidate>
+                {% csrf_token %}
+
+                <!-- OTP Input -->
+                <div class="mb-4">
+                    <label for="{{ form.otp.id_for_label }}" class="form-label text-center d-block">OTP Code</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
+                        {{ form.otp }}
+                    </div>
+                    {% if form.otp.errors %}
+                    <div class="field-error"><i class="bi bi-exclamation-triangle"></i> {{ form.otp.errors.0 }}</div>
+                    {% endif %}
+                    <div class="text-muted small mt-2 text-center">OTP is valid for 10 minutes</div>
+                </div>
+
+                <!-- Verify Button -->
+                <button type="submit" name="verify" class="btn btn-brand btn-brand-instructor w-100 mb-3">
+                    <i class="bi bi-check-circle me-1"></i> Verify OTP
+                </button>
+
+                <!-- Resend Button -->
+                <button type="submit" name="resend" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-repeat me-1"></i> Resend OTP
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer py-3 px-3 text-center">
+            <a href="{% url 'instructor:instructor_forgot_password' %}" class="link-instructor">
+                ← Change email address
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
