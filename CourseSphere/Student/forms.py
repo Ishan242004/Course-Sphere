@@ -37,11 +37,22 @@ class StudentRegisterForm(forms.ModelForm):
         })
     )
     phone = forms.CharField(
-        max_length=15,
-        required=False,
+        max_length=10,
+        min_length=10,
+        required=True,
+        error_messages={
+            'required': 'Phone number is required.',
+            'min_length': 'Phone number must be exactly 10 digits.',
+            'max_length': 'Phone number must be exactly 10 digits.',
+        },
         widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': '+1 234 567 8900'
+            'class': 'form-control phone-input',
+            'placeholder': 'Enter 10-digit mobile number',
+            'maxlength': '10',
+            'minlength': '10',
+            'pattern': '[0-9]{10}',
+            'inputmode': 'numeric',
+            'oninput': "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
         })
     )
     roll_number = forms.CharField(
@@ -53,19 +64,21 @@ class StudentRegisterForm(forms.ModelForm):
         })
     )
     password = forms.CharField(
-        min_length=6,
+        min_length=8,
         required=True,
         widget=forms.PasswordInput(attrs={
             'class': 'form-control password-input',
-            'placeholder': 'At least 6 characters'
+            'placeholder': 'At least 8 characters',
+            'minlength': '8'
         })
     )
     confirm_password = forms.CharField(
-        min_length=6,
+        min_length=8,
         required=True,
         widget=forms.PasswordInput(attrs={
             'class': 'form-control confirm-password-input',
-            'placeholder': 'Re-enter your password'
+            'placeholder': 'Re-enter your password',
+            'minlength': '8'
         })
     )
 
@@ -74,21 +87,44 @@ class StudentRegisterForm(forms.ModelForm):
         fields = ['phone', 'roll_number']
 
     def clean_username(self):
-        username = self.cleaned_data.get('username')
+        username = self.cleaned_data.get('username', '').strip()
+        if not username:
+            raise forms.ValidationError("Username is required.")
+        if len(username) < 3:
+            raise forms.ValidationError("Username must be at least 3 characters long.")
+        if ' ' in username:
+            raise forms.ValidationError("Username cannot contain spaces.")
         if User.objects.filter(username__iexact=username).exists():
-            raise forms.ValidationError("This username is already taken. Please choose another.")
+            raise forms.ValidationError("This username is already taken. Please choose another username.")
         return username
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get('email', '').strip()
+        if not email:
+            raise forms.ValidationError("Email address is required.")
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("An account with this email already exists.")
-        return email
+        return email.lower()
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        if not phone.isdigit():
+            raise forms.ValidationError("Phone number must contain digits only.")
+        if len(phone) != 10:
+            raise forms.ValidationError("Phone number must be exactly 10 digits.")
+        if Student.objects.filter(phone=phone).exists():
+            raise forms.ValidationError("This phone number is already registered.")
+        return phone
 
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
+
+        if password and len(password) < 8:
+            self.add_error('password', "Password must be at least 8 characters long.")
 
         if password and confirm_password and password != confirm_password:
             self.add_error('confirm_password', "Passwords do not match.")
@@ -96,16 +132,16 @@ class StudentRegisterForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = User.objects.create_user(
-            username=self.cleaned_data['username'],
-            email=self.cleaned_data['email'],
+            username=self.cleaned_data['username'].strip(),
+            email=self.cleaned_data['email'].strip().lower(),
             password=self.cleaned_data['password'],
-            first_name=self.cleaned_data['first_name'],
-            last_name=self.cleaned_data['last_name']
+            first_name=self.cleaned_data['first_name'].strip(),
+            last_name=self.cleaned_data['last_name'].strip()
         )
         student = Student.objects.create(
             user=user,
-            phone=self.cleaned_data.get('phone', ''),
-            roll_number=self.cleaned_data.get('roll_number', '')
+            phone=self.cleaned_data.get('phone', '').strip(),
+            roll_number=self.cleaned_data.get('roll_number', '').strip()
         )
         return student
 
@@ -150,20 +186,22 @@ class OTPVerifyForm(forms.Form):
 
 class ResetPasswordForm(forms.Form):
     password = forms.CharField(
-        min_length=6,
+        min_length=8,
         required=True,
         widget=forms.PasswordInput(attrs={
             'class': 'form-control password-input',
-            'placeholder': 'New password (at least 6 characters)',
+            'placeholder': 'New password (at least 8 characters)',
+            'minlength': '8',
             'autofocus': True,
         })
     )
     confirm_password = forms.CharField(
-        min_length=6,
+        min_length=8,
         required=True,
         widget=forms.PasswordInput(attrs={
             'class': 'form-control confirm-password-input',
             'placeholder': 'Re-enter new password',
+            'minlength': '8',
         })
     )
 
@@ -171,6 +209,8 @@ class ResetPasswordForm(forms.Form):
         cleaned_data = super().clean()
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
+        if password and len(password) < 8:
+            self.add_error('password', "Password must be at least 8 characters long.")
         if password and confirm_password and password != confirm_password:
             self.add_error('confirm_password', "Passwords do not match.")
         return cleaned_data

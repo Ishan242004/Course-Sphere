@@ -85,14 +85,14 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 animate-fade-in">
         {% for course in courses %}
         <div class="col">
-            <div class="glass-course-card h-100 d-flex flex-column">
+            <div class="card glass-course-card h-100 d-flex flex-column border-0">
                 <!-- Thumbnail / Header Image -->
                 <div class="course-card-img-wrapper">
                     <span class="course-category-badge">
                         <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
                     </span>
                     {% if course.course_image %}
-                    <img src="{{ course.course_image.url }}" class="course-card-img" alt="{{ course.course_title }}"
+                    <img src="{{ course.course_image.url }}" class="card-img-top course-card-img" alt="{{ course.course_title }}"
                         loading="lazy">
                     {% else %}
                     <div class="course-card-placeholder">

@@ -58,8 +58,7 @@
                         {{ form.first_name }}
                     </div>
                     {% if form.first_name.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.first_name.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.first_name.errors.0 }}</div>
                     {% endif %}
                 </div>
 
@@ -70,8 +69,7 @@
                         {{ form.last_name }}
                     </div>
                     {% if form.last_name.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.last_name.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.last_name.errors.0 }}</div>
                     {% endif %}
                 </div>
             </div>
@@ -85,8 +83,7 @@
                         {{ form.username }}
                     </div>
                     {% if form.username.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.username.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0 }}</div>
                     {% endif %}
                 </div>
 
@@ -97,8 +94,7 @@
                         {{ form.email }}
                     </div>
                     {% if form.email.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.email.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.email.errors.0 }}</div>
                     {% endif %}
                 </div>
             </div>
@@ -112,20 +108,20 @@
                         {{ form.roll_number }}
                     </div>
                     {% if form.roll_number.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.roll_number.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.roll_number.errors.0 }}</div>
                     {% endif %}
                 </div>
 
                 <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Phone Number</label>
+                    <label class="form-label text-white-50 small mb-1">Phone Number (10 digits) *</label>
                     <div class="input-group-custom">
                         <span class="input-icon"><i class="bi bi-telephone"></i></span>
                         {{ form.phone }}
                     </div>
                     {% if form.phone.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.phone.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.phone.errors.0 }}</div>
+                    {% else %}
+                    <div class="form-text small" style="color: rgba(255,255,255,0.45); font-size: 0.76rem;">Must be exactly 10 digits.</div>
                     {% endif %}
                 </div>
             </div>
@@ -133,7 +129,7 @@
             <!-- Password Row -->
             <div class="row g-3 mb-4">
                 <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Password *</label>
+                    <label class="form-label text-white-50 small mb-1">Password (min. 8 characters) *</label>
                     <div class="input-group-custom">
                         <span class="input-icon"><i class="bi bi-lock"></i></span>
                         {{ form.password }}
@@ -142,8 +138,9 @@
                         </button>
                     </div>
                     {% if form.password.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.password.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.password.errors.0 }}</div>
+                    {% else %}
+                    <div class="form-text small" style="color: rgba(255,255,255,0.45); font-size: 0.76rem;">At least 8 characters.</div>
                     {% endif %}
                 </div>
 
@@ -158,8 +155,7 @@
                     </div>
                     <div id="password-match-feedback" class="form-text small"></div>
                     {% if form.confirm_password.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.confirm_password.errors.0 }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.confirm_password.errors.0 }}</div>
                     {% endif %}
                 </div>
             </div>

@@ -41,6 +41,68 @@ class StudentAuthTests(TestCase):
         self.assertContains(response, "Registration successful! Please login.")
         self.assertTrue(User.objects.filter(username='rahul_s').exists())
 
+    def test_registration_rejects_duplicate_username(self):
+        """Registration rejects if another student/user already has the same username."""
+        User.objects.create_user(username='existing_user', email='exist@example.com', password='Password123')
+
+        response = self.client.post(self.register_url, {
+            'first_name': 'Amit',
+            'last_name': 'Verma',
+            'username': 'existing_user',
+            'email': 'amit@example.com',
+            'phone': '9876543211',
+            'roll_number': 'STU2026-002',
+            'password': 'Password1234',
+            'confirm_password': 'Password1234',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This username is already taken")
+
+    def test_registration_rejects_password_less_than_8_chars(self):
+        """Registration rejects passwords with less than 8 characters."""
+        response = self.client.post(self.register_url, {
+            'first_name': 'Amit',
+            'last_name': 'Verma',
+            'username': 'amit_v',
+            'email': 'amit@example.com',
+            'phone': '9876543212',
+            'roll_number': 'STU2026-003',
+            'password': '1234567',  # 7 characters
+            'confirm_password': '1234567',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "at least 8 characters")
+
+    def test_registration_requires_exactly_10_digit_phone(self):
+        """Registration enforces exactly 10-digit numeric phone number."""
+        # Test less than 10 digits
+        res_short = self.client.post(self.register_url, {
+            'first_name': 'Amit',
+            'last_name': 'Verma',
+            'username': 'amit_short',
+            'email': 'amit_short@example.com',
+            'phone': '987654321',  # 9 digits
+            'roll_number': 'STU2026-004',
+            'password': 'Password1234',
+            'confirm_password': 'Password1234',
+        })
+        self.assertEqual(res_short.status_code, 200)
+        self.assertContains(res_short, "exactly 10 digits")
+
+        # Test non-numeric phone
+        res_letters = self.client.post(self.register_url, {
+            'first_name': 'Amit',
+            'last_name': 'Verma',
+            'username': 'amit_letters',
+            'email': 'amit_letters@example.com',
+            'phone': '987654321a',  # non-numeric
+            'roll_number': 'STU2026-005',
+            'password': 'Password1234',
+            'confirm_password': 'Password1234',
+        })
+        self.assertEqual(res_letters.status_code, 200)
+        self.assertContains(res_letters, "digits only")
+
     def test_student_login_redirects_to_home_page(self):
         """After login, redirects to home page with success message."""
         user = User.objects.create_user(username='john_doe', email='john@example.com', password='Password123')
@@ -269,5 +331,19 @@ class CourseListingTests(TestCase):
         response = self.client.get(self.course_list_url, {'q': 'NonExistentTitleXYZ'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No Courses Found")
+
+    def test_admin_created_course_appears_on_student_course_browsing_page(self):
+        """Courses added via Django Admin dynamically appear in the student course catalog."""
+        Course.objects.create(
+            course_title="Admin Specialized Machine Learning",
+            category="Artificial Intelligence",
+            price=Decimal("89.99"),
+            description="Comprehensive AI and ML masterclass added by administrator.",
+        )
+        response = self.client.get(self.course_list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Admin Specialized Machine Learning")
+        self.assertContains(response, "Artificial Intelligence")
+        self.assertContains(response, "₹89.99")
 
 

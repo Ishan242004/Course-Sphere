@@ -57,3 +57,64 @@ class AdminLoginForm(forms.Form):
             cleaned_data['user'] = user
 
         return cleaned_data
+
+
+from Instructor.models import Course, Instructor
+
+
+class CourseForm(forms.ModelForm):
+    course_title = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g. Master Full-Stack Web Development Bootcamp',
+        })
+    )
+    category = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g. Programming, Design, Business, AI',
+        })
+    )
+    price = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=True,
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '0.00 (Enter 0 for Free course)',
+            'step': '0.01',
+        })
+    )
+    description = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Detailed course overview, learning outcomes, and requirements...',
+        })
+    )
+    course_image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*',
+        })
+    )
+    instructor = forms.ModelChoiceField(
+        queryset=Instructor.objects.select_related('user').all(),
+        required=False,
+        empty_label="CourseSphere Faculty (Unassigned)",
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+        })
+    )
+
+    class Meta:
+        model = Course
+        fields = ['course_title', 'category', 'price', 'description', 'course_image', 'instructor']
+

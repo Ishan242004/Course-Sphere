@@ -98,4 +98,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }, 6000);
     });
+
+    // 5. Phone Input: Restrict to 10 digits only
+    const phoneInputs = document.querySelectorAll('input[name="phone"], .phone-input');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+    });
 });
