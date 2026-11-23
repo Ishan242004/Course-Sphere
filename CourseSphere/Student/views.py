@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth import login, logout
@@ -178,13 +180,18 @@ def student_reset_password(request):
 def course_list(request):
     """
     Display all available courses dynamically from the database.
-    Supports optional search query and category filtering.
+    Supports title and keyword search, category filtering, price filtering,
+    and pagination (with query parameter preservation across page changes).
     """
     courses = Course.objects.all().order_by('-created_date')
 
     search_query = request.GET.get('q', '').strip()
     selected_category = request.GET.get('category', '').strip()
+    selected_price = request.GET.get('price', request.GET.get('price_filter', '')).strip()
+    min_price = request.GET.get('min_price', '').strip()
+    max_price = request.GET.get('max_price', '').strip()
 
+    # Search by title (and description for comprehensive discovery)
     if search_query:
         courses = courses.filter(
             Q(course_title__icontains=search_query) |
@@ -192,18 +199,79 @@ def course_list(request):
             Q(category__icontains=search_query)
         )
 
+    # Filter by category
     if selected_category:
         courses = courses.filter(category__iexact=selected_category)
 
-    # Get distinct categories from database for filter pills
+    # Filter by price
+    if selected_price:
+        sp_lower = selected_price.lower()
+        if sp_lower in ['free', '0']:
+            courses = courses.filter(price=Decimal('0.00'))
+        elif sp_lower == 'paid':
+            courses = courses.filter(price__gt=Decimal('0.00'))
+        elif sp_lower in ['under-50', '0-50', 'under_50']:
+            courses = courses.filter(price__gt=Decimal('0.00'), price__lte=Decimal('50.00'))
+        elif sp_lower in ['50-100', '50_100']:
+            courses = courses.filter(price__gte=Decimal('50.00'), price__lte=Decimal('100.00'))
+        elif sp_lower in ['over-100', '100+', '100-plus', '100_plus']:
+            courses = courses.filter(price__gt=Decimal('100.00'))
+        else:
+            try:
+                numeric_val = Decimal(selected_price)
+                courses = courses.filter(price=numeric_val)
+            except (InvalidOperation, ValueError):
+                pass
+
+    if min_price:
+        try:
+            courses = courses.filter(price__gte=Decimal(min_price))
+        except (InvalidOperation, ValueError):
+            pass
+
+    if max_price:
+        try:
+            courses = courses.filter(price__lte=Decimal(max_price))
+        except (InvalidOperation, ValueError):
+            pass
+
+    # Get distinct categories from database for filter dropdown and pills
     categories = Course.objects.values_list('category', flat=True).distinct().order_by('category')
 
+    total_matching_courses = courses.count()
+
+    # Pagination: 6 courses per page (configurable via per_page param)
+    per_page = request.GET.get('per_page', 6)
+    try:
+        per_page = int(per_page)
+        if per_page <= 0:
+            per_page = 6
+    except (ValueError, TypeError):
+        per_page = 6
+
+    paginator = Paginator(courses, per_page)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # Preserve search and filter values during pagination
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    extra_query = query_params.urlencode()
+
     context = {
-        'courses': courses,
+        'page_obj': page_obj,
+        'courses': page_obj,  # Iterable of courses on current page
+        'paginator': paginator,
+        'is_paginated': page_obj.has_other_pages(),
         'categories': categories,
         'search_query': search_query,
         'selected_category': selected_category,
-        'total_courses': courses.count(),
+        'selected_price': selected_price,
+        'min_price': min_price,
+        'max_price': max_price,
+        'total_courses': total_matching_courses,
+        'extra_query': extra_query,
     }
     return render(request, 'Student/course_list.html', context)
 

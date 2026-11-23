@@ -5,121 +5,133 @@
 
 {% block content %}
 <div class="glass-page-wrapper">
-  <div class="container">
-    <!-- Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
-        <div>
-            <div class="glass-admin-badge mb-2">
-                <i class="bi bi-shield-check me-1"></i> System Administrator
-            </div>
-            <h1 class="glass-page-title display-6 mb-1">
-                Admin Management Cockpit
-            </h1>
-            <p class="glass-page-subtitle mb-0">
-                Welcome back, <strong style="color:#38bdf8;">{{ user.username }}</strong>. Centralized overview of CourseSphere platform metrics.
-            </p>
-        </div>
-        <div>
-            <a href="{% url 'admin:index' %}" class="glass-pill-btn gap-2">
-                <i class="bi bi-gear-fill"></i> Open Django Admin Site &rarr;
-            </a>
-        </div>
-    </div>
-
-    <!-- Quick Stats Cards -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="glass-stat-card" style="border-left: 4px solid #0d9488;">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="small fw-bold text-uppercase" style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Total Students</span>
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(13,148,136,0.2); color:#2dd4bf; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
-                        <i class="bi bi-backpack2-fill"></i>
-                    </div>
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
+            <div>
+                <div class="glass-admin-badge mb-2">
+                    <i class="bi bi-shield-check me-1"></i> System Administrator
                 </div>
-                <div class="display-5 fw-extrabold mb-1">{{ stats.total_students }}</div>
-                <span style="color:rgba(255,255,255,0.45); font-size:0.85rem;">Registered learners</span>
+                <h1 class="glass-page-title display-6 mb-1">
+                    Admin Management Cockpit
+                </h1>
+                <p class="glass-page-subtitle mb-0">
+                    Welcome back, <strong style="color:#38bdf8;">{{ user.username }}</strong>. Centralized overview of
+                    CourseSphere platform metrics.
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'admin:index' %}" class="glass-pill-btn gap-2">
+                    <i class="bi bi-gear-fill"></i> Open Django Admin Site &rarr;
+                </a>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="glass-stat-card" style="border-left: 4px solid #7c3aed;">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="small fw-bold text-uppercase" style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Total Instructors</span>
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(124,58,237,0.2); color:#c084fc; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
-                        <i class="bi bi-person-video3"></i>
+        <!-- Quick Stats Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="glass-stat-card" style="border-left: 4px solid #0d9488;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="small fw-bold text-uppercase"
+                            style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Total Students</span>
+                        <div
+                            style="width:44px; height:44px; border-radius:12px; background:rgba(13,148,136,0.2); color:#2dd4bf; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+                            <i class="bi bi-backpack2-fill"></i>
+                        </div>
                     </div>
+                    <div class="display-5 fw-extrabold mb-1">{{ stats.total_students }}</div>
+                    <span style="color:rgba(255,255,255,0.45); font-size:0.85rem;">Registered learners</span>
                 </div>
-                <div class="display-5 fw-extrabold mb-1">{{ stats.total_instructors }}</div>
-                <span style="color:rgba(255,255,255,0.45); font-size:0.85rem;">Faculty members</span>
             </div>
-        </div>
 
-        <div class="col-md-4">
-            <div class="glass-stat-card" style="border-left: 4px solid #2563eb;">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="small fw-bold text-uppercase" style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Total Courses</span>
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(37,99,235,0.2); color:#60a5fa; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
-                        <i class="bi bi-collection-play-fill"></i>
+            <div class="col-md-4">
+                <div class="glass-stat-card" style="border-left: 4px solid #7c3aed;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="small fw-bold text-uppercase"
+                            style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Total Instructors</span>
+                        <div
+                            style="width:44px; height:44px; border-radius:12px; background:rgba(124,58,237,0.2); color:#c084fc; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+                            <i class="bi bi-person-video3"></i>
+                        </div>
                     </div>
+                    <div class="display-5 fw-extrabold mb-1">{{ stats.total_instructors }}</div>
+                    <span style="color:rgba(255,255,255,0.45); font-size:0.85rem;">Faculty members</span>
                 </div>
-                <div class="display-5 fw-extrabold mb-1">{{ stats.total_courses }}</div>
-                <span style="color:rgba(255,255,255,0.45); font-size:0.85rem;">Published curriculum</span>
+            </div>
+
+            <div class="col-md-4">
+                <div class="glass-stat-card" style="border-left: 4px solid #2563eb;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="small fw-bold text-uppercase"
+                            style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Total Courses</span>
+                        <div
+                            style="width:44px; height:44px; border-radius:12px; background:rgba(37,99,235,0.2); color:#60a5fa; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+                            <i class="bi bi-collection-play-fill"></i>
+                        </div>
+                    </div>
+                    <div class="display-5 fw-extrabold mb-1">{{ stats.total_courses }}</div>
+                    <span style="color:rgba(255,255,255,0.45); font-size:0.85rem;">Published curriculum</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Recent Courses Table -->
-    <div class="glass-inner-card p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="fw-bold mb-0" style="color:#f1f5f9;">
-                <i class="bi bi-journal-check me-2" style="color:#38bdf8;"></i> Recently Added Courses
-            </h5>
-            <a href="{% url 'student:course_list' %}" class="glass-pill-btn" style="font-size:0.82rem; padding:0.35rem 1rem;">
-                View All in Catalog
-            </a>
-        </div>
+        <!-- Recent Courses Table -->
+        <div class="glass-inner-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0" style="color:#f1f5f9;">
+                    <i class="bi bi-journal-check me-2" style="color:#38bdf8;"></i> Recently Added Courses
+                </h5>
+                <a href="{% url 'student:course_list' %}" class="glass-pill-btn"
+                    style="font-size:0.82rem; padding:0.35rem 1rem;">
+                    View All in Catalog
+                </a>
+            </div>
 
-        {% if stats.recent_courses %}
-        <div class="table-responsive">
-            <table class="table glass-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Instructor</th>
-                        <th>Created Date</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in stats.recent_courses %}
-                    <tr>
-                        <td class="fw-bold">{{ c.course_title }}</td>
-                        <td><span class="glass-filter-pill" style="font-size:0.75rem; padding:0.2rem 0.75rem;">{{ c.category }}</span></td>
-                        <td>
-                            {% if c.price == 0 %}
+            {% if stats.recent_courses %}
+            <div class="table-responsive">
+                <table class="table glass-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Instructor</th>
+                            <th>Created Date</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in stats.recent_courses %}
+                        <tr>
+                            <td class="fw-bold">{{ c.course_title }}</td>
+                            <td><span class="glass-filter-pill" style="font-size:0.75rem; padding:0.2rem 0.75rem;">{{
+                                    c.category }}</span></td>
+                            <td>
+                                {% if c.price == 0 %}
                                 <span style="color:#4ade80; font-weight:600;">Free</span>
-                            {% else %}
-                                <span style="color:#f1f5f9;">${{ c.price }}</span>
-                            {% endif %}
-                        </td>
-                        <td style="color:rgba(255,255,255,0.6);">{{ c.instructor.user.username|default:"Unassigned" }}</td>
-                        <td style="color:rgba(255,255,255,0.45); font-size:0.85rem;">{{ c.created_date|date:"M d, Y" }}</td>
-                        <td class="text-end">
-                            <a href="{% url 'student:course_detail' c.id %}" class="glass-pill-btn" style="font-size:0.78rem; padding:0.3rem 0.9rem;">
-                                View
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                {% else %}
+                                <span style="color:#f1f5f9;">₹{{ c.price }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="color:rgba(255,255,255,0.6);">{{ c.instructor.user.username|default:"Unassigned"
+                                }}</td>
+                            <td style="color:rgba(255,255,255,0.45); font-size:0.85rem;">{{ c.created_date|date:"M d, Y"
+                                }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'student:course_detail' c.id %}" class="glass-pill-btn"
+                                    style="font-size:0.78rem; padding:0.3rem 0.9rem;">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color:rgba(255,255,255,0.4);" class="mb-0">No courses published yet.</p>
+            {% endif %}
         </div>
-        {% else %}
-        <p style="color:rgba(255,255,255,0.4);" class="mb-0">No courses published yet.</p>
-        {% endif %}
     </div>
-  </div>
 </div>
 {% endblock %}

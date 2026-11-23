@@ -132,7 +132,7 @@ class CourseListingTests(TestCase):
         # Course 1 verification
         self.assertContains(response, "Modern Python Bootcamp")
         self.assertContains(response, "Programming")
-        self.assertContains(response, "$19.99")
+        self.assertContains(response, "₹19.99")
         self.assertContains(response, "Master Python from basics")
 
         # Course 2 verification (Free price)
@@ -177,7 +177,7 @@ class CourseListingTests(TestCase):
         self.assertTemplateUsed(response, 'Student/course_detail.html')
         self.assertContains(response, "Modern Python Bootcamp")
         self.assertContains(response, "Programming")
-        self.assertContains(response, "$19.99")
+        self.assertContains(response, "₹19.99")
         self.assertContains(response, "John Watson")
 
     def test_course_detail_view_404_invalid_id(self):
@@ -185,4 +185,89 @@ class CourseListingTests(TestCase):
         invalid_url = reverse('student:course_detail', args=[99999])
         response = self.client.get(invalid_url)
         self.assertEqual(response.status_code, 404)
+
+    def test_search_courses_by_title(self):
+        """Search query matches courses by title."""
+        response = self.client.get(self.course_list_url, {'q': 'Modern Python'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Modern Python Bootcamp")
+        self.assertNotContains(response, "UI/UX Design Masterclass")
+
+    def test_filter_by_price_free(self):
+        """Filtering by price=free returns only free courses."""
+        response = self.client.get(self.course_list_url, {'price': 'free'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "UI/UX Design Masterclass")
+        self.assertNotContains(response, "Modern Python Bootcamp")
+
+    def test_filter_by_price_paid(self):
+        """Filtering by price=paid returns only paid courses."""
+        response = self.client.get(self.course_list_url, {'price': 'paid'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Modern Python Bootcamp")
+        self.assertNotContains(response, "UI/UX Design Masterclass")
+
+    def test_filter_by_category_and_price_combined(self):
+        """Filtering by both category and price simultaneously."""
+        response = self.client.get(self.course_list_url, {
+            'category': 'Programming',
+            'price': 'paid'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Modern Python Bootcamp")
+        self.assertNotContains(response, "UI/UX Design Masterclass")
+
+    def test_pagination_splits_courses_across_pages(self):
+        """When courses exceed per_page limit, pagination splits them across pages."""
+        # Create 5 more courses so total is 7 (exceeding per_page=6)
+        for i in range(1, 6):
+            Course.objects.create(
+                course_title=f"Extra Course {i}",
+                category="Programming",
+                price=Decimal(f"{10 + i}.00"),
+                description=f"Description for extra course {i} to test pagination.",
+                instructor=self.instructor
+            )
+
+        # Page 1 should contain 6 courses and show pagination
+        response_p1 = self.client.get(self.course_list_url, {'page': 1})
+        self.assertEqual(response_p1.status_code, 200)
+        self.assertEqual(len(response_p1.context['page_obj']), 6)
+        self.assertTrue(response_p1.context['page_obj'].has_next())
+
+        # Page 2 should contain 1 course
+        response_p2 = self.client.get(self.course_list_url, {'page': 2})
+        self.assertEqual(response_p2.status_code, 200)
+        self.assertEqual(len(response_p2.context['page_obj']), 1)
+        self.assertTrue(response_p2.context['page_obj'].has_previous())
+
+    def test_pagination_preserves_search_and_filter_parameters(self):
+        """Pagination links preserve search query, category, and price parameters."""
+        # Create 7 courses in 'Design' category
+        for i in range(1, 8):
+            Course.objects.create(
+                course_title=f"Design Pro {i}",
+                category="Design",
+                price=Decimal("25.00"),
+                description=f"Learn advanced design techniques in module {i}.",
+                instructor=self.instructor
+            )
+
+        response = self.client.get(self.course_list_url, {
+            'category': 'Design',
+            'price': 'paid',
+            'page': 1
+        })
+        self.assertEqual(response.status_code, 200)
+        # Check that page 2 link retains category=Design and price=paid
+        self.assertContains(response, "category=Design")
+        self.assertContains(response, "price=paid")
+        self.assertContains(response, "page=2")
+
+    def test_empty_state_message_when_no_courses_match_filters(self):
+        """When filters return no matching courses, an empty state message is shown."""
+        response = self.client.get(self.course_list_url, {'q': 'NonExistentTitleXYZ'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No Courses Found")
+
 

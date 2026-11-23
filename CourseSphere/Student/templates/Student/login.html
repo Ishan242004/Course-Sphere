@@ -11,7 +11,8 @@
     <div class="glass-card animate-fade-in">
         <!-- Top Icon: Graduation Cap -->
         <div class="text-center mb-3">
-            <div class="d-inline-flex align-items-center justify-content-center" style="font-size: 3.6rem; color: #ffffff; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));">
+            <div class="d-inline-flex align-items-center justify-content-center"
+                style="font-size: 3.6rem; color: #ffffff; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));">
                 <i class="bi bi-mortarboard-fill"></i>
             </div>
         </div>
@@ -28,7 +29,8 @@
         {% if messages %}
         <div class="mb-3">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }} py-2 px-3 small rounded-3 mb-2 border-0 {% if message.tags == 'error' or message.tags == 'danger' %}bg-danger{% elif message.tags == 'success' %}bg-success{% else %}bg-primary{% endif %} text-white bg-opacity-75">
+            <div
+                class="alert alert-{{ message.tags|default:'info' }} py-2 px-3 small rounded-3 mb-2 border-0 {% if message.tags == 'error' or message.tags == 'danger' %}bg-danger{% elif message.tags == 'success' %}bg-success{% else %}bg-primary{% endif %} text-white bg-opacity-75">
                 <i class="bi bi-info-circle me-1"></i> {{ message }}
             </div>
             {% endfor %}
@@ -54,7 +56,8 @@
                     {{ form.username }}
                 </div>
                 {% if form.username.errors %}
-                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0 }}</div>
+                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0
+                    }}</div>
                 {% endif %}
             </div>
 
@@ -68,7 +71,8 @@
                     </button>
                 </div>
                 {% if form.password.errors %}
-                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.password.errors.0 }}</div>
+                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.password.errors.0
+                    }}</div>
                 {% endif %}
             </div>
 
