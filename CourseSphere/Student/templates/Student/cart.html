@@ -190,27 +190,13 @@
                         </div>
                     </div>
 
-                    <!-- Checkout Form -->
-                    <form method="POST" action="{% url 'student:checkout' %}">
+                    <!-- Payment Error / Status Banner -->
+                    <div id="razorpay-alert" class="alert d-none py-2 px-3 small mb-3" role="alert"></div>
+
+                    <!-- Checkout Form (Direct Pay via Razorpay) -->
+                    <form id="razorpay-checkout-form" method="POST" action="{% url 'student:checkout' %}" data-free-order="{{ summary.is_free_order|yesno:'true,false' }}">
                         {% csrf_token %}
-
-                        {% if not summary.is_free_order %}
-                        <div class="mb-4">
-                            <label class="form-label small fw-bold text-uppercase mb-2" style="color: var(--cs-text-muted); font-family: var(--font-mono); font-size: 0.72rem;">
-                                Select Payment Method
-                            </label>
-                            <div class="d-flex flex-column gap-2">
-                                {% for value, label in payment_methods %}
-                                <label class="glass-inner-card p-2 px-3 d-flex align-items-center gap-2" style="cursor: pointer;">
-                                    <input type="radio" name="payment_method" value="{{ value }}" class="form-check-input mt-0" {% if value == 'CARD' %}checked{% endif %}>
-                                    <span class="small fw-semibold" style="color: var(--cs-text-title);">{{ label }}</span>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <button type="submit" class="glass-btn-primary w-100" style="height: 50px; border-radius: 12px; font-size: 1rem;">
+                        <button type="submit" id="razorpay-pay-btn" class="glass-btn-primary w-100" style="height: 50px; border-radius: 12px; font-size: 1rem;">
                             {% if summary.is_free_order %}
                             <i class="bi bi-lightning-charge-fill"></i> Complete Free Enrollment
                             {% else %}
@@ -220,7 +206,12 @@
                     </form>
 
                     <div class="text-center mt-3 small" style="color: var(--cs-text-muted); font-size: 0.78rem;">
-                        <i class="bi bi-shield-check text-success me-1"></i> Instant lifetime access unlocked upon checkout
+                        <i class="bi bi-shield-check text-success me-1"></i>
+                        {% if summary.is_free_order %}
+                        Instant lifetime access unlocked upon checkout
+                        {% else %}
+                        Secured by Razorpay · Instant lifetime access
+                        {% endif %}
                     </div>
                 </div>
             </aside>
@@ -243,4 +234,147 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if summary.items %}
+{% if not summary.is_free_order %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('razorpay-checkout-form');
+    const payBtn = document.getElementById('razorpay-pay-btn');
+    const alertBox = document.getElementById('razorpay-alert');
+    if (!form || !payBtn) return;
+
+    const defaultBtnHtml = payBtn.innerHTML;
+    const isFreeOrder = form.dataset.freeOrder === 'true';
+
+    function showNotice(type, text) {
+        if (!alertBox) return;
+        alertBox.className = 'alert alert-' + type + ' py-2 px-3 small mb-3';
+        alertBox.textContent = text;
+    }
+
+    function clearNotice() {
+        if (!alertBox) return;
+        alertBox.className = 'alert d-none py-2 px-3 small mb-3';
+        alertBox.textContent = '';
+    }
+
+    function setLoading(label) {
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' + label;
+    }
+
+    function resetButton() {
+        payBtn.disabled = false;
+        payBtn.innerHTML = defaultBtnHtml;
+    }
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        clearNotice();
+
+        if (!isFreeOrder && typeof window.Razorpay === 'undefined') {
+            showNotice('danger', 'Unable to load Razorpay Checkout. Please check your internet connection and refresh.');
+            return;
+        }
+
+        const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+        const csrfToken = csrfInput ? csrfInput.value : '';
+        setLoading(isFreeOrder ? 'Completing Enrollment...' : 'Connecting to Razorpay...');
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken,
+                },
+                credentials: 'same-origin',
+            });
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                resetButton();
+                showNotice('danger', data.error || 'Could not initiate checkout. Please try again.');
+                if (data.redirect_url) {
+                    setTimeout(() => window.location.assign(data.redirect_url), 1200);
+                }
+                return;
+            }
+
+            if (data.free_order) {
+                window.location.assign(data.redirect_url);
+                return;
+            }
+
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: data.currency || 'INR',
+                name: data.name || 'CourseSphere',
+                description: data.description || 'Course Enrollment',
+                order_id: data.razorpay_order_id,
+                prefill: data.prefill || {},
+                notes: data.notes || {},
+                theme: {
+                    color: '#2e67ff',
+                },
+                handler: async function (rzpResponse) {
+                    setLoading('Verifying Payment...');
+                    try {
+                        const verifyRes = await fetch(data.verify_url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': csrfToken,
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                razorpay_order_id: rzpResponse.razorpay_order_id,
+                                razorpay_payment_id: rzpResponse.razorpay_payment_id,
+                                razorpay_signature: rzpResponse.razorpay_signature,
+                            }),
+                        });
+                        const verifyData = await verifyRes.json();
+                        if (!verifyRes.ok || !verifyData.ok) {
+                            resetButton();
+                            showNotice('danger', verifyData.error || 'Payment verification failed.');
+                            return;
+                        }
+                        window.location.assign(verifyData.redirect_url);
+                    } catch (err) {
+                        resetButton();
+                        showNotice('danger', 'Network error while verifying payment. Please contact support if charged.');
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        resetButton();
+                        showNotice('warning', 'Payment window closed. Your selected courses are still saved in your cart.');
+                    },
+                },
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (failure) {
+                resetButton();
+                const desc = failure && failure.error && failure.error.description
+                    ? failure.error.description
+                    : 'Payment failed inside Razorpay. Please try again.';
+                showNotice('danger', desc);
+            });
+            rzp.open();
+        } catch (err) {
+            resetButton();
+            showNotice('danger', 'Unable to start payment. Please check your connection and retry.');
+        }
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

@@ -6,3 +6,5 @@ tzdata==2026.6
 
 # Environment Management
 python-dotenv>=1.0.1
+
+razorpay>=2.0.0

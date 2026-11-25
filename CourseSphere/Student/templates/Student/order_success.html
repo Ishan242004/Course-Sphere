@@ -77,6 +77,12 @@
                         <span style="color: var(--cs-text-muted);">Order ID</span>
                         <span class="fw-bold" style="color: var(--cs-text-title); font-family: var(--font-mono);">{{ order.order_id }}</span>
                     </div>
+                    {% if order.razorpay_payment_id %}
+                    <div class="d-flex justify-content-between small mb-2">
+                        <span style="color: var(--cs-text-muted);">Razorpay Payment ID</span>
+                        <span class="fw-semibold" style="color: var(--cs-text-title); font-family: var(--font-mono); font-size: 0.78rem;">{{ order.razorpay_payment_id }}</span>
+                    </div>
+                    {% endif %}
                     <div class="d-flex justify-content-between small mb-3 pb-3" style="border-bottom: 1px solid var(--cs-border-light);">
                         <span style="color: var(--cs-text-muted);">Payment Method</span>
                         <span class="fw-semibold" style="color: var(--cs-text-title);">{{ order.get_payment_method_display }}</span>

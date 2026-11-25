@@ -20,6 +20,7 @@ urlpatterns = [
     path('cart/clear/', views.clear_cart, name='clear_cart'),
     path('cart/coupon/', views.apply_coupon, name='apply_coupon'),
     path('checkout/', views.checkout, name='checkout'),
+    path('razorpay/verify/', views.razorpay_verify_payment, name='razorpay_verify'),
     path('orders/<str:order_id>/', views.order_detail, name='order_detail'),
     # Forgot Password flow
     path('forgot-password/', views.student_forgot_password, name='student_forgot_password'),

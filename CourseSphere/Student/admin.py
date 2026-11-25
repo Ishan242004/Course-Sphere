@@ -23,9 +23,20 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('order_id', 'student', 'subtotal', 'discount_amount', 'tax_amount', 'total_amount', 'payment_method', 'status', 'created_at')
+    list_display = (
+        'order_id',
+        'student',
+        'subtotal',
+        'discount_amount',
+        'tax_amount',
+        'total_amount',
+        'payment_method',
+        'razorpay_payment_id',
+        'status',
+        'created_at',
+    )
     list_filter = ('status', 'payment_method', 'created_at')
-    search_fields = ('order_id', 'student__user__username', 'coupon_code')
+    search_fields = ('order_id', 'student__user__username', 'coupon_code', 'razorpay_order_id', 'razorpay_payment_id')
     inlines = [OrderItemInline]
 
 

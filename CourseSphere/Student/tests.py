@@ -1,5 +1,9 @@
+import hashlib
+import hmac
+import json
 from decimal import Decimal
-from django.test import TestCase, Client
+from unittest.mock import patch
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from Student.models import Student, Cart, Order, Enrollment
@@ -398,6 +402,7 @@ class StudentCartAndPaymentTests(TestCase):
         self.cart_url = reverse('student:cart')
         self.coupon_url = reverse('student:apply_coupon')
         self.checkout_url = reverse('student:checkout')
+        self.verify_url = reverse('student:razorpay_verify')
         self.clear_url = reverse('student:clear_cart')
 
     def test_guest_redirected_to_login_on_cart_access(self):
@@ -505,16 +510,106 @@ class StudentCartAndPaymentTests(TestCase):
         self.assertEqual(summary['total_amount'], Decimal('0.00'))
         self.assertContains(res, "Complete Free Enrollment")
 
-    def test_checkout_creates_order_and_enrollments_and_clears_cart(self):
+    def test_cart_hides_payment_method_selector_and_shows_pay_button(self):
+        self.client.login(username='cart_student', password='Password123')
+        self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
+        res = self.client.get(self.cart_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertNotContains(res, "Select Payment Method")
+        self.assertNotContains(res, 'name="payment_method"')
+        self.assertContains(res, "Pay ₹118.00 &amp; Enroll")
+        self.assertContains(res, "Secured by Razorpay")
+
+    def test_free_course_checkout_bypasses_razorpay_and_enrolls_directly(self):
+        self.client.login(username='cart_student', password='Password123')
+        self.client.post(reverse('student:add_to_cart', args=[self.course_free.id]))
+
+        checkout_res = self.client.post(
+            self.checkout_url,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(checkout_res.status_code, 200)
+        payload = checkout_res.json()
+        self.assertTrue(payload['ok'])
+        self.assertTrue(payload['free_order'])
+
+        order = Order.objects.get(student=self.student)
+        self.assertEqual(order.payment_method, 'FREE')
+        self.assertEqual(order.total_amount, Decimal('0.00'))
+        self.assertEqual(Cart.objects.filter(student=self.student).count(), 0)
+        self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course_free).exists())
+
+    @override_settings(RAZORPAY_KEY_ID='rzp_test_unit_key', RAZORPAY_KEY_SECRET='unit_test_secret_123')
+    @patch('Student.views.create_razorpay_order')
+    def test_razorpay_checkout_verifies_signature_and_completes_order(self, mock_create_rzp_order):
+        mock_create_rzp_order.return_value = {
+            'id': 'order_TEST_RZP_123456',
+            'amount': 28320,
+            'currency': 'INR',
+        }
+
         self.client.login(username='cart_student', password='Password123')
         self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
         self.client.post(reverse('student:add_to_cart', args=[self.course_two.id]))
         self.client.post(self.coupon_url, {'coupon_code': 'SPHERE20'})
 
-        # Subtotal 300 - 20% (60) = 240; 18% GST = 43.20; Total = 283.20
-        checkout_res = self.client.post(self.checkout_url, {'payment_method': 'UPI'}, follow=True)
-        self.assertEqual(checkout_res.status_code, 200)
-        self.assertTemplateUsed(checkout_res, 'Student/order_success.html')
+        # Step 1: Checkout initializes Razorpay order (₹283.20 -> 28320 paise)
+        init_res = self.client.post(
+            self.checkout_url,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(init_res.status_code, 200)
+        init_payload = init_res.json()
+        self.assertTrue(init_payload['ok'])
+        self.assertFalse(init_payload['free_order'])
+        self.assertEqual(init_payload['key'], 'rzp_test_unit_key')
+        self.assertEqual(init_payload['razorpay_order_id'], 'order_TEST_RZP_123456')
+        self.assertEqual(init_payload['amount'], 28320)
+        self.assertEqual(init_payload['currency'], 'INR')
+        mock_create_rzp_order.assert_called_once()
+        self.assertEqual(mock_create_rzp_order.call_args.kwargs['amount_paise'], 28320)
+
+        # Before verification, cart remains intact and no Order exists
+        self.assertEqual(Order.objects.count(), 0)
+        self.assertEqual(Cart.objects.filter(student=self.student).count(), 2)
+
+        # Step 2a: Invalid signature must be rejected without unlocking courses
+        bad_verify = self.client.post(
+            self.verify_url,
+            data=json.dumps({
+                'razorpay_order_id': 'order_TEST_RZP_123456',
+                'razorpay_payment_id': 'pay_TEST_987654',
+                'razorpay_signature': 'invalid_tampered_signature',
+            }),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(bad_verify.status_code, 400)
+        self.assertFalse(bad_verify.json()['ok'])
+        self.assertEqual(Order.objects.count(), 0)
+        self.assertEqual(Cart.objects.filter(student=self.student).count(), 2)
+
+        # Step 2b: Valid HMAC-SHA256 signature succeeds and unlocks courses
+        rzp_payment_id = 'pay_TEST_987654'
+        valid_signature = hmac.new(
+            b'unit_test_secret_123',
+            f"order_TEST_RZP_123456|{rzp_payment_id}".encode(),
+            hashlib.sha256,
+        ).hexdigest()
+
+        verify_res = self.client.post(
+            self.verify_url,
+            data=json.dumps({
+                'razorpay_order_id': 'order_TEST_RZP_123456',
+                'razorpay_payment_id': rzp_payment_id,
+                'razorpay_signature': valid_signature,
+            }),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(verify_res.status_code, 200)
+        verify_payload = verify_res.json()
+        self.assertTrue(verify_payload['ok'])
 
         order = Order.objects.get(student=self.student)
         self.assertEqual(order.subtotal, Decimal('300.00'))
@@ -522,10 +617,21 @@ class StudentCartAndPaymentTests(TestCase):
         self.assertEqual(order.tax_amount, Decimal('43.20'))
         self.assertEqual(order.total_amount, Decimal('283.20'))
         self.assertEqual(order.coupon_code, 'SPHERE20')
-        self.assertEqual(order.payment_method, 'UPI')
+        self.assertEqual(order.payment_method, 'RAZORPAY')
+        self.assertEqual(order.razorpay_order_id, 'order_TEST_RZP_123456')
+        self.assertEqual(order.razorpay_payment_id, rzp_payment_id)
+        self.assertEqual(order.razorpay_signature, valid_signature)
+        self.assertEqual(order.status, 'PAID')
         self.assertEqual(order.items.count(), 2)
-        self.assertContains(checkout_res, order.order_id)
-        self.assertContains(checkout_res, "₹283.20")
+
+        # Receipt page displays Order ID, Payment ID, Method, and Paid Total
+        receipt_res = self.client.get(verify_payload['redirect_url'])
+        self.assertEqual(receipt_res.status_code, 200)
+        self.assertTemplateUsed(receipt_res, 'Student/order_success.html')
+        self.assertContains(receipt_res, order.order_id)
+        self.assertContains(receipt_res, rzp_payment_id)
+        self.assertContains(receipt_res, "Razorpay")
+        self.assertContains(receipt_res, "₹283.20")
 
         # Cart is now empty, Enrollments created
         self.assertEqual(Cart.objects.filter(student=self.student).count(), 0)
