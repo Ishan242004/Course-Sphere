@@ -111,7 +111,7 @@
                 </div>
 
                 <!-- Interactive Learning Launcher Panel -->
-                <div class="cs-panel p-4 p-md-5">
+                <div class="cs-panel p-4 p-md-5 mb-4">
                     <h5 class="fw-bold mb-2" style="color: var(--cs-text-title);">
                         <i class="bi bi-rocket-takeoff-fill me-2" style="color: var(--cs-primary);"></i> Quick Jump into Learning
                     </h5>
@@ -158,6 +158,79 @@
                         </div>
                     </div>
                 </div>
+
+                {% if cart_summary.item_count > 0 %}
+                <!-- Pending Cart Summary Alert Card -->
+                <div class="cs-panel p-4 mb-4" style="border-color: var(--cs-primary-border);">
+                    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                        <div>
+                            <div class="small fw-bold text-uppercase mb-1" style="color: var(--cs-primary); font-family: var(--font-mono);">
+                                <i class="bi bi-cart3 me-1"></i> Active Cart ({{ cart_summary.item_count }} Course{{ cart_summary.item_count|pluralize }})
+                            </div>
+                            <div class="fw-bold" style="color: var(--cs-text-title);">
+                                Subtotal: ₹{{ cart_summary.subtotal }} · Payable (incl. GST): <span style="color: var(--cs-primary); font-family: var(--font-mono);">₹{{ cart_summary.total_amount }}</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'student:cart' %}" class="glass-btn-primary py-2 px-4 flex-shrink-0">
+                            <i class="bi bi-cart-check"></i> Open Cart & Pay
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- My Enrolled Courses & Order History -->
+                <div class="cs-panel p-4 mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold mb-0" style="color: var(--cs-text-title);">
+                            <i class="bi bi-mortarboard-fill me-2" style="color: #10B981;"></i> My Enrolled Courses ({{ enrollments.count }})
+                        </h5>
+                        <a href="{% url 'student:course_list' %}" class="small fw-semibold" style="color: var(--cs-primary);">Browse Catalog →</a>
+                    </div>
+                    {% if enrollments %}
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        {% for enrollment in enrollments %}
+                        <div class="col">
+                            <div class="glass-inner-card p-3 h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <span class="badge mb-2" style="background: rgba(16, 185, 129, 0.12); color: #10B981; font-size: 0.72rem;">{{ enrollment.course.category }}</span>
+                                    <h6 class="fw-bold mb-1" style="color: var(--cs-text-title);">{{ enrollment.course.course_title }}</h6>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center pt-2 mt-2" style="border-top: 1px solid var(--cs-border-light);">
+                                    <span class="small" style="color: var(--cs-text-muted);">{{ enrollment.enrolled_at|date:"M d, Y" }}</span>
+                                    <a href="{% url 'student:course_detail' enrollment.course.id %}" class="small fw-bold" style="color: var(--cs-primary);">Open Course →</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="small mb-0" style="color: var(--cs-text-muted);">
+                        You haven't enrolled in any courses yet. Add courses to your cart to enroll!
+                    </p>
+                    {% endif %}
+                </div>
+
+                {% if orders %}
+                <div class="cs-panel p-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);">
+                        <i class="bi bi-receipt-cutoff me-2" style="color: var(--cs-primary);"></i> Recent Orders & Receipts
+                    </h5>
+                    <div class="d-flex flex-column gap-2">
+                        {% for order in orders %}
+                        <div class="glass-inner-card p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div>
+                                <span class="fw-bold" style="color: var(--cs-text-title); font-family: var(--font-mono);">{{ order.order_id }}</span>
+                                <span class="small ms-2" style="color: var(--cs-text-muted);">{{ order.created_at|date:"M d, Y" }} · {{ order.items.count }} item{{ order.items.count|pluralize }}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold" style="color: #10B981; font-family: var(--font-mono);">₹{{ order.total_amount }}</span>
+                                <a href="{% url 'student:order_detail' order.order_id %}" class="glass-pill-btn py-1 px-3 small">View Receipt</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

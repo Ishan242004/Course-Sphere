@@ -34,7 +34,7 @@
     </script>
 
     <!-- Custom CSS from static/css/ -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=22.0">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -53,6 +53,15 @@
                 </a>
 
                 <div class="d-flex align-items-center gap-2 d-lg-none">
+                    {% if user.is_authenticated and user.student_profile %}
+                    <a href="{% url 'student:cart' %}" class="theme-toggle-btn position-relative text-decoration-none"
+                        aria-label="Course Cart" title="Course Cart">
+                        <i class="bi bi-cart3"></i>
+                        {% if cart_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.62rem;">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+                    {% endif %}
                     <button id="themeToggleBtnMobile" type="button" class="theme-toggle-btn"
                         aria-label="Toggle theme" title="Toggle Theme">
                         <i class="bi bi-moon-stars-fill" id="themeToggleIconMobile"></i>
@@ -72,6 +81,14 @@
                         </li>
                         {% if user.is_authenticated %}
                         {% if user.student_profile %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'student:cart' %}">
+                                <i class="bi bi-cart3 me-1"></i> Cart
+                                {% if cart_count > 0 %}
+                                <span class="badge rounded-pill ms-1" style="background: var(--cs-primary); color: #fff; font-size: 0.72rem; font-family: var(--font-mono);">{{ cart_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'student:student_dashboard' %}">
                                 <i class="bi bi-speedometer2 me-1"></i> Student Dashboard

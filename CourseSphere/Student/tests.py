@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from Student.models import Student
+from Student.models import Student, Cart, Order, Enrollment
 from Instructor.models import Instructor, Course
 
 
@@ -345,5 +345,202 @@ class CourseListingTests(TestCase):
         self.assertContains(response, "Admin Specialized Machine Learning")
         self.assertContains(response, "Artificial Intelligence")
         self.assertContains(response, "₹89.99")
+
+
+class StudentCartAndPaymentTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.student_user = User.objects.create_user(
+            username='cart_student',
+            email='cartstudent@example.com',
+            password='Password123',
+            first_name='Riya',
+            last_name='Patel',
+        )
+        self.student = Student.objects.create(
+            user=self.student_user,
+            phone='9876543219',
+            roll_number='STU-CART-01',
+        )
+
+        self.instructor_user = User.objects.create_user(
+            username='cart_prof',
+            email='cartprof@example.com',
+            password='Password123',
+        )
+        self.instructor = Instructor.objects.create(
+            user=self.instructor_user,
+            specialization='Software Engineering',
+        )
+
+        self.course_one = Course.objects.create(
+            course_title='Full Stack Python Mastery',
+            category='Programming',
+            price=Decimal('100.00'),
+            description='Complete Python web backend engineering course with real projects.',
+            instructor=self.instructor,
+        )
+        self.course_two = Course.objects.create(
+            course_title='System Design Architecture',
+            category='Programming',
+            price=Decimal('200.00'),
+            description='Learn scalable distributed systems and high-load architectures.',
+            instructor=self.instructor,
+        )
+        self.course_free = Course.objects.create(
+            course_title='Git and GitHub Starter',
+            category='Programming',
+            price=Decimal('0.00'),
+            description='Essential version control workflows for modern software developers.',
+            instructor=self.instructor,
+        )
+
+        self.cart_url = reverse('student:cart')
+        self.coupon_url = reverse('student:apply_coupon')
+        self.checkout_url = reverse('student:checkout')
+        self.clear_url = reverse('student:clear_cart')
+
+    def test_guest_redirected_to_login_on_cart_access(self):
+        response = self.client.get(self.cart_url)
+        self.assertRedirects(response, f"{reverse('student:student_login')}?next={self.cart_url}")
+
+        add_res = self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
+        expected_next = reverse('student:add_to_cart', args=[self.course_one.id])
+        self.assertRedirects(add_res, f"{reverse('student:student_login')}?next={expected_next}")
+
+    def test_instructor_cannot_add_to_student_cart(self):
+        self.client.login(username='cart_prof', password='Password123')
+        response = self.client.post(
+            reverse('student:add_to_cart', args=[self.course_one.id]),
+            follow=True,
+        )
+        self.assertContains(response, "Only registered students can add courses to the cart.")
+        self.assertEqual(Cart.objects.count(), 0)
+
+    def test_add_multiple_courses_recalculates_subtotal_gst_and_total(self):
+        self.client.login(username='cart_student', password='Password123')
+
+        # 1. Add first course (₹100.00) -> Subtotal 100.00, GST (18%) 18.00, Total 118.00
+        self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
+        res1 = self.client.get(self.cart_url)
+        self.assertEqual(res1.status_code, 200)
+        summary1 = res1.context['summary']
+        self.assertEqual(summary1['item_count'], 1)
+        self.assertEqual(summary1['subtotal'], Decimal('100.00'))
+        self.assertEqual(summary1['tax_amount'], Decimal('18.00'))
+        self.assertEqual(summary1['total_amount'], Decimal('118.00'))
+        self.assertContains(res1, "₹118.00")
+
+        # 2. Add second course (₹200.00) -> Subtotal 300.00, GST (18%) 54.00, Total 354.00
+        ajax_res = self.client.post(
+            reverse('student:add_to_cart', args=[self.course_two.id]),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(ajax_res.status_code, 200)
+        payload = ajax_res.json()
+        self.assertTrue(payload['ok'])
+        self.assertTrue(payload['added'])
+        self.assertEqual(payload['item_count'], 2)
+        self.assertEqual(payload['subtotal'], '300.00')
+        self.assertEqual(payload['tax_amount'], '54.00')
+        self.assertEqual(payload['total_amount'], '354.00')
+
+        res2 = self.client.get(self.cart_url)
+        self.assertContains(res2, "Full Stack Python Mastery")
+        self.assertContains(res2, "System Design Architecture")
+        self.assertContains(res2, "₹300.00")
+        self.assertContains(res2, "₹54.00")
+        self.assertContains(res2, "₹354.00")
+
+        # 3. Adding same course again does not duplicate or inflate totals
+        dup_res = self.client.post(
+            reverse('student:add_to_cart', args=[self.course_one.id]),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertFalse(dup_res.json()['added'])
+        self.assertEqual(dup_res.json()['item_count'], 2)
+        self.assertEqual(dup_res.json()['total_amount'], '354.00')
+
+    def test_coupon_calculation_and_removal_recalculates_payment(self):
+        self.client.login(username='cart_student', password='Password123')
+        self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
+        self.client.post(reverse('student:add_to_cart', args=[self.course_two.id]))
+
+        # Invalid coupon rejected
+        invalid_res = self.client.post(self.coupon_url, {'coupon_code': 'BADCODE'}, follow=True)
+        self.assertContains(invalid_res, "Invalid promo code")
+
+        # Valid 10% coupon SPHERE10: Subtotal 300 - 30 = 270 taxable; 18% GST = 48.60; Total = 318.60
+        valid_res = self.client.post(self.coupon_url, {'coupon_code': 'sphere10'}, follow=True)
+        summary = valid_res.context['summary']
+        self.assertEqual(summary['coupon_code'], 'SPHERE10')
+        self.assertEqual(summary['discount_amount'], Decimal('30.00'))
+        self.assertEqual(summary['taxable_amount'], Decimal('270.00'))
+        self.assertEqual(summary['tax_amount'], Decimal('48.60'))
+        self.assertEqual(summary['total_amount'], Decimal('318.60'))
+        self.assertContains(valid_res, "₹318.60")
+
+        # Remove course_two -> only ₹100 remains with SPHERE10 -> 100 - 10 = 90; GST = 16.20; Total = 106.20
+        rem_res = self.client.post(reverse('student:remove_from_cart', args=[self.course_two.id]), follow=True)
+        rem_summary = rem_res.context['summary']
+        self.assertEqual(rem_summary['item_count'], 1)
+        self.assertEqual(rem_summary['subtotal'], Decimal('100.00'))
+        self.assertEqual(rem_summary['discount_amount'], Decimal('10.00'))
+        self.assertEqual(rem_summary['tax_amount'], Decimal('16.20'))
+        self.assertEqual(rem_summary['total_amount'], Decimal('106.20'))
+
+        # Clear cart completely resets items and coupon
+        clear_res = self.client.post(self.clear_url, follow=True)
+        self.assertEqual(clear_res.context['summary']['item_count'], 0)
+        self.assertContains(clear_res, "Your Course Cart is Empty")
+
+    def test_free_course_cart_total_is_zero(self):
+        self.client.login(username='cart_student', password='Password123')
+        self.client.post(reverse('student:add_to_cart', args=[self.course_free.id]))
+        res = self.client.get(self.cart_url)
+        summary = res.context['summary']
+        self.assertTrue(summary['is_free_order'])
+        self.assertEqual(summary['subtotal'], Decimal('0.00'))
+        self.assertEqual(summary['tax_amount'], Decimal('0.00'))
+        self.assertEqual(summary['total_amount'], Decimal('0.00'))
+        self.assertContains(res, "Complete Free Enrollment")
+
+    def test_checkout_creates_order_and_enrollments_and_clears_cart(self):
+        self.client.login(username='cart_student', password='Password123')
+        self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
+        self.client.post(reverse('student:add_to_cart', args=[self.course_two.id]))
+        self.client.post(self.coupon_url, {'coupon_code': 'SPHERE20'})
+
+        # Subtotal 300 - 20% (60) = 240; 18% GST = 43.20; Total = 283.20
+        checkout_res = self.client.post(self.checkout_url, {'payment_method': 'UPI'}, follow=True)
+        self.assertEqual(checkout_res.status_code, 200)
+        self.assertTemplateUsed(checkout_res, 'Student/order_success.html')
+
+        order = Order.objects.get(student=self.student)
+        self.assertEqual(order.subtotal, Decimal('300.00'))
+        self.assertEqual(order.discount_amount, Decimal('60.00'))
+        self.assertEqual(order.tax_amount, Decimal('43.20'))
+        self.assertEqual(order.total_amount, Decimal('283.20'))
+        self.assertEqual(order.coupon_code, 'SPHERE20')
+        self.assertEqual(order.payment_method, 'UPI')
+        self.assertEqual(order.items.count(), 2)
+        self.assertContains(checkout_res, order.order_id)
+        self.assertContains(checkout_res, "₹283.20")
+
+        # Cart is now empty, Enrollments created
+        self.assertEqual(Cart.objects.filter(student=self.student).count(), 0)
+        self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course_one).exists())
+        self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course_two).exists())
+
+        # Student dashboard displays enrolled courses & order receipt
+        dash_res = self.client.get(reverse('student:student_dashboard'))
+        self.assertContains(dash_res, "Full Stack Python Mastery")
+        self.assertContains(dash_res, "System Design Architecture")
+        self.assertContains(dash_res, order.order_id)
+
+        # Already enrolled course cannot be re-added to cart
+        readd_res = self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]), follow=True)
+        self.assertContains(readd_res, "already enrolled")
+        self.assertEqual(Cart.objects.filter(student=self.student).count(), 0)
 
 

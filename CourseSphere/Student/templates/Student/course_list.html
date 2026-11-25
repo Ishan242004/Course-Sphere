@@ -33,130 +33,145 @@
             </div>
         </div>
 
-        <!-- 2-Pane Marketplace Layout: Left Sticky Filter Sidebar + Right Catalog Grid -->
-        <div class="row g-4 align-items-start">
-            <!-- Left Sticky Filter Rail -->
-            <aside class="col-lg-3">
-                <div class="cs-panel p-3 p-lg-4 sticky-top" style="top: 96px;">
-                    <form method="GET" action="{% url 'student:course_list' %}">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Search</label>
-                            <div class="input-group-custom">
-                                <span class="input-icon"><i class="bi bi-search"></i></span>
-                                <input type="text" name="q" value="{{ search_query }}" class="form-control"
-                                    placeholder="Search courses by title, keywords..." autocomplete="off">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Category</label>
-                            <select name="category" class="form-select">
-                                <option value="">All Categories</option>
-                                {% for cat in categories %}
-                                <option value="{{ cat }}" {% if selected_category|lower == cat|lower %}selected{% endif %}>{{ cat }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Price</label>
-                            <select name="price" class="form-select">
-                                <option value="">All Prices</option>
-                                <option value="free" {% if selected_price == 'free' %}selected{% endif %}>Free (₹0)</option>
-                                <option value="paid" {% if selected_price == 'paid' %}selected{% endif %}>Paid Courses</option>
-                                <option value="under-50" {% if selected_price == 'under-50' %}selected{% endif %}>Under ₹50</option>
-                                <option value="50-100" {% if selected_price == '50-100' %}selected{% endif %}>₹50 – ₹100</option>
-                                <option value="over-100" {% if selected_price == 'over-100' %}selected{% endif %}>₹100+</option>
-                            </select>
-                        </div>
-
-                        <div class="d-flex gap-2 mb-4">
-                            <button type="submit" class="glass-btn-primary w-100" style="height: 46px; border-radius: 10px;">
-                                <i class="bi bi-funnel-fill me-1"></i> Filter
-                            </button>
-                            {% if search_query or selected_category or selected_price or min_price or max_price %}
-                            <a href="{% url 'student:course_list' %}" class="glass-pill-btn d-flex align-items-center justify-content-center flex-shrink-0" title="Clear Filters" style="height: 46px; width: 46px; padding: 0;">
-                                <i class="bi bi-x-lg"></i>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </form>
-
-                    <!-- Quick Filter Tags -->
-                    <div class="pt-3" style="border-top: 1px solid var(--cs-border-light);">
-                        <span class="small fw-bold text-uppercase d-block mb-2" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Quick Filters:</span>
-                        <div class="d-flex flex-wrap gap-2">
-                            <a href="{% url 'student:course_list' %}" class="course-filter-pill {% if not selected_category %}active{% endif %}">All</a>
-                            {% for cat in categories %}
-                            <a href="{% url 'student:course_list' %}?category={{ cat }}" class="course-filter-pill {% if selected_category|lower == cat|lower %}active{% endif %}">{{ cat }}</a>
-                            {% endfor %}
-                        </div>
+        <!-- Search & Filter Bar Above Courses -->
+        <div class="cs-panel p-3 p-md-4 mb-4">
+            <form method="GET" action="{% url 'student:course_list' %}" class="row g-3 align-items-end mb-3">
+                <div class="col-md-5 col-lg-5">
+                    <label class="form-label small fw-bold text-uppercase mb-1" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Search</label>
+                    <div class="input-group-custom">
+                        <span class="input-icon"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control"
+                            placeholder="Search courses by title, keywords..." autocomplete="off">
                     </div>
                 </div>
-            </aside>
 
-            <!-- Right Courses Showcase -->
-            <div class="col-lg-9">
-                {% if courses %}
-                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 animate-fade-in">
-                    {% for course in courses %}
-                    <div class="col">
-                        <article class="glass-course-card h-100 d-flex flex-column">
-                            <div class="course-card-img-wrapper">
-                                <span class="course-category-badge">
-                                    <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
-                                </span>
-                                {% if course.course_image %}
-                                <img src="{{ course.course_image.url }}" class="course-card-img" alt="{{ course.course_title }}" loading="lazy">
-                                {% else %}
-                                <div class="course-card-placeholder">
-                                    <i class="bi bi-globe-americas"></i>
-                                </div>
+                <div class="col-md-3 col-lg-3">
+                    <label class="form-label small fw-bold text-uppercase mb-1" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if selected_category|lower == cat|lower %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2 col-lg-2">
+                    <label class="form-label small fw-bold text-uppercase mb-1" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Price</label>
+                    <select name="price" class="form-select">
+                        <option value="">All Prices</option>
+                        <option value="free" {% if selected_price == 'free' %}selected{% endif %}>Free (₹0)</option>
+                        <option value="paid" {% if selected_price == 'paid' %}selected{% endif %}>Paid Courses</option>
+                        <option value="under-50" {% if selected_price == 'under-50' %}selected{% endif %}>Under ₹50</option>
+                        <option value="50-100" {% if selected_price == '50-100' %}selected{% endif %}>₹50 – ₹100</option>
+                        <option value="over-100" {% if selected_price == 'over-100' %}selected{% endif %}>₹100+</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="glass-btn-primary w-100" style="height: 48px; border-radius: 10px; white-space: nowrap;">
+                        <i class="bi bi-funnel-fill me-1"></i> Filter
+                    </button>
+                    {% if search_query or selected_category or selected_price or min_price or max_price %}
+                    <a href="{% url 'student:course_list' %}" class="glass-pill-btn d-flex align-items-center justify-content-center flex-shrink-0" title="Clear Filters" style="height: 48px; width: 48px; padding: 0;">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- Horizontal Quick Filter Tags Row -->
+            <div class="d-flex flex-wrap align-items-center gap-2 pt-3" style="border-top: 1px solid var(--cs-border-light);">
+                <span class="small fw-bold text-uppercase me-1" style="color: var(--cs-text-muted); font-size: 0.72rem; letter-spacing: 0.06em;">Quick Filters:</span>
+                <a href="{% url 'student:course_list' %}" class="course-filter-pill {% if not selected_category %}active{% endif %}">All</a>
+                {% for cat in categories %}
+                <a href="{% url 'student:course_list' %}?category={{ cat }}" class="course-filter-pill {% if selected_category|lower == cat|lower %}active{% endif %}">{{ cat }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Full-Width Courses Grid -->
+        <div>
+            {% if courses %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 animate-fade-in">
+                {% for course in courses %}
+                <div class="col">
+                    <article class="glass-course-card h-100 d-flex flex-column">
+                        <div class="course-card-img-wrapper">
+                            <span class="course-category-badge">
+                                <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
+                            </span>
+                            {% if course.course_image %}
+                            <img src="{{ course.course_image.url }}" class="course-card-img" alt="{{ course.course_title }}" loading="lazy">
+                            {% else %}
+                            <div class="course-card-placeholder">
+                                <i class="bi bi-globe-americas"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body">
+                            {% if course.instructor %}
+                            <div class="d-flex align-items-center gap-2 mb-2 small text-truncate" style="color: var(--cs-text-muted);">
+                                <i class="bi bi-person-circle flex-shrink-0" style="color: var(--cs-primary);"></i>
+                                <span class="fw-semibold text-truncate" style="color: var(--cs-text-title);">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</span>
+                                {% if course.instructor.specialization %}
+                                <span class="text-truncate">· {{ course.instructor.specialization }}</span>
                                 {% endif %}
                             </div>
+                            {% else %}
+                            <div class="d-flex align-items-center gap-2 mb-2 small" style="color: var(--cs-text-muted);">
+                                <i class="bi bi-globe-americas flex-shrink-0" style="color: var(--cs-primary);"></i>
+                                <span class="fw-semibold" style="color: var(--cs-text-title);">CourseSphere Faculty</span>
+                            </div>
+                            {% endif %}
 
-                            <div class="card-body">
-                                {% if course.instructor %}
-                                <div class="d-flex align-items-center gap-2 mb-2 small" style="color: var(--cs-text-muted);">
-                                    <i class="bi bi-person-circle" style="color: var(--cs-primary);"></i>
-                                    <span class="fw-semibold" style="color: var(--cs-text-title);">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</span>
-                                    {% if course.instructor.specialization %}
-                                    <span>· {{ course.instructor.specialization }}</span>
+                            <h5 class="card-title" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.75rem;">
+                                {{ course.course_title }}
+                            </h5>
+
+                            <p class="small flex-grow-1 mb-3" style="color: var(--cs-text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">
+                                {{ course.description }}
+                            </p>
+
+                            <div class="d-flex align-items-center justify-content-between small pb-3 mb-3" style="color: var(--cs-text-dim); border-bottom: 1px solid var(--cs-border-light);">
+                                <span><i class="bi bi-calendar3 me-1" style="color: var(--cs-primary);"></i>{{ course.created_date|date:"M d, Y" }}</span>
+                                <span style="color: #10B981;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between gap-2 mt-auto">
+                                <span class="course-price-chip flex-shrink-0 {% if course.price == 0 %}is-free{% endif %}" style="white-space: nowrap;">
+                                    {% if course.price == 0 %}Free{% else %}₹{{ course.price }}{% endif %}
+                                </span>
+                                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                    {% if user.is_authenticated and user.student_profile %}
+                                        {% if course.id in enrolled_course_ids %}
+                                        <a href="{% url 'student:student_dashboard' %}" class="glass-pill-btn py-2 px-2 small text-success border-success border-opacity-25" title="Enrolled">
+                                            <i class="bi bi-patch-check-fill"></i>
+                                        </a>
+                                        {% elif course.id in cart_course_ids %}
+                                        <a href="{% url 'student:cart' %}" class="glass-pill-btn py-2 px-2 small text-primary border-primary border-opacity-25" title="In Cart">
+                                            <i class="bi bi-cart-check-fill"></i>
+                                        </a>
+                                        {% else %}
+                                        <form method="POST" action="{% url 'student:add_to_cart' course.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="glass-pill-btn py-2 px-2 small" title="Add to Cart">
+                                                <i class="bi bi-cart-plus"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
                                     {% endif %}
-                                </div>
-                                {% else %}
-                                <div class="d-flex align-items-center gap-2 mb-2 small" style="color: var(--cs-text-muted);">
-                                    <i class="bi bi-globe-americas" style="color: var(--cs-primary);"></i>
-                                    <span class="fw-semibold" style="color: var(--cs-text-title);">CourseSphere Faculty</span>
-                                </div>
-                                {% endif %}
-
-                                <h5 class="card-title" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.75rem;">
-                                    {{ course.course_title }}
-                                </h5>
-
-                                <p class="small flex-grow-1 mb-3" style="color: var(--cs-text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">
-                                    {{ course.description }}
-                                </p>
-
-                                <div class="d-flex align-items-center justify-content-between small pb-3 mb-3" style="color: var(--cs-text-dim); border-bottom: 1px solid var(--cs-border-light);">
-                                    <span><i class="bi bi-calendar3 me-1" style="color: var(--cs-primary);"></i>{{ course.created_date|date:"M d, Y" }}</span>
-                                    <span style="color: #10B981;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
-                                </div>
-
-                                <div class="d-flex align-items-center justify-content-between gap-2 mt-auto">
-                                    <span class="course-price-chip {% if course.price == 0 %}is-free{% endif %}">
-                                        {% if course.price == 0 %}Free{% else %}₹{{ course.price }}{% endif %}
-                                    </span>
-                                    <a href="{% url 'student:course_detail' course.id %}" class="glass-btn-primary py-2 px-3" style="font-size: 0.85rem;">
+                                    <a href="{% url 'student:course_detail' course.id %}" class="glass-btn-primary py-2 px-3" style="font-size: 0.85rem; white-space: nowrap;">
                                         <i class="bi bi-eye"></i> View Details
                                     </a>
                                 </div>
                             </div>
-                        </article>
-                    </div>
-                    {% endfor %}
+                        </div>
+                    </article>
                 </div>
+                {% endfor %}
+            </div>
 
                 <!-- Pagination Controls -->
                 {% if courses and paginator.num_pages >= 1 %}
@@ -230,7 +245,6 @@
                     {% endif %}
                 </div>
                 {% endif %}
-            </div>
         </div>
     </div>
 </div>

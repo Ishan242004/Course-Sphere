@@ -261,15 +261,36 @@
                         {{ course.description|default:"Discover comprehensive modules and hands-on projects designed to advance your skills in the Course Sphere." }}
                     </p>
 
-                    <div class="d-flex align-items-center justify-content-between pt-3 mt-auto"
+                    <div class="d-flex align-items-center justify-content-between gap-2 pt-3 mt-auto"
                         style="border-top: 1px solid var(--cs-border-light);">
-                        <span class="course-price-chip {% if course.price == 0 %}is-free{% endif %}">
+                        <span class="course-price-chip flex-shrink-0 {% if course.price == 0 %}is-free{% endif %}" style="white-space: nowrap;">
                             {% if course.price == 0 %}Free{% else %}₹{{ course.price }}{% endif %}
                         </span>
-                        <a href="{% url 'student:course_detail' course.id %}" class="glass-btn-primary py-2 px-3"
-                            style="font-size: 0.85rem;">
-                            <i class="bi bi-eye"></i> View Course Orbit
-                        </a>
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                            {% if user.is_authenticated and user.student_profile %}
+                                {% if course.id in enrolled_course_ids %}
+                                <a href="{% url 'student:student_dashboard' %}" class="glass-pill-btn py-2 px-2 small text-success border-success border-opacity-25" title="Enrolled">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                </a>
+                                {% elif course.id in cart_course_ids %}
+                                <a href="{% url 'student:cart' %}" class="glass-pill-btn py-2 px-2 small text-primary border-primary border-opacity-25" title="In Cart">
+                                    <i class="bi bi-cart-check-fill"></i>
+                                </a>
+                                {% else %}
+                                <form method="POST" action="{% url 'student:add_to_cart' course.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="glass-pill-btn py-2 px-2 small" title="Add to Cart">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            {% endif %}
+                            <a href="{% url 'student:course_detail' course.id %}" class="glass-btn-primary py-2 px-3"
+                                style="font-size: 0.85rem; white-space: nowrap;">
+                                <i class="bi bi-eye"></i> View Course Orbit
+                            </a>
+                        </div>
                     </div>
                 </div>
             </article>

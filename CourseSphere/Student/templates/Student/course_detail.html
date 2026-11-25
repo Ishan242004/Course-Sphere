@@ -96,9 +96,32 @@
 
                 <div class="d-grid gap-2 mb-4">
                     {% if user.is_authenticated and user.student_profile %}
-                        <button class="glass-btn-primary" style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
-                            <i class="bi bi-lightning-charge-fill me-1"></i> Enroll in Course
-                        </button>
+                        {% if course.id in enrolled_course_ids %}
+                        <a href="{% url 'student:student_dashboard' %}" class="glass-btn-primary text-center text-decoration-none" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
+                            <i class="bi bi-patch-check-fill me-1"></i> Enrolled ✓
+                        </a>
+                        {% elif course.id in cart_course_ids %}
+                        <a href="{% url 'student:cart' %}" class="glass-btn-primary text-center text-decoration-none" style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
+                            <i class="bi bi-cart-check-fill me-1"></i> Go to Cart ({{ cart_count }} · ₹{{ cart_total_amount }})
+                        </a>
+                        <form method="POST" action="{% url 'student:remove_from_cart' course.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="glass-pill-btn w-100 justify-content-center text-danger border-danger border-opacity-25">
+                                <i class="bi bi-trash3 me-1"></i> Remove from Cart
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="{% url 'student:add_to_cart' course.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="glass-btn-primary w-100 mb-2" style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
+                                <i class="bi bi-cart-plus-fill me-1"></i> Add to Cart
+                            </button>
+                            <button type="submit" name="action" value="buy_now" class="glass-pill-btn w-100 justify-content-center">
+                                <i class="bi bi-lightning-charge-fill me-1"></i> Enroll in Course
+                            </button>
+                        </form>
+                        {% endif %}
                     {% elif user.is_authenticated %}
                         <a href="{% url 'student:course_list' %}" class="glass-pill-btn justify-content-center">
                             Browsing as {{ user.username }}
