@@ -4,95 +4,99 @@
 {% block title %}{{ course.course_title }} — CourseSphere{% endblock %}
 
 {% block content %}
-<div class="glass-page-wrapper">
-  <div class="container">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'student:course_list' %}">Courses</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ course.course_title|truncatechars:35 }}</li>
-        </ol>
-    </nav>
+<!-- Dark Contrast Course Header Banner -->
+<section class="cs-course-hero-banner">
+    <div class="container position-relative" style="z-index: 2;">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'student:course_list' %}">Courses</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ course.course_title|truncatechars:35 }}</li>
+            </ol>
+        </nav>
 
-    <div class="row g-4">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="badge rounded-pill px-3 py-2" style="background: rgba(46, 103, 255, 0.28); border: 1px solid rgba(46, 103, 255, 0.5); color: #ffffff; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
+            </span>
+            <span class="small px-2 py-1" style="color: rgba(255, 255, 255, 0.78);"><i class="bi bi-calendar3 me-1 text-info"></i> Published: {{ course.created_date|date:"F d, Y" }}</span>
+            <span class="small px-2 py-1" style="color: rgba(255, 255, 255, 0.78);"><i class="bi bi-globe me-1 text-info"></i> English</span>
+            <span class="small px-2 py-1" style="color: #00eeba;"><i class="bi bi-award me-1"></i> Verified Sphere Certificate</span>
+        </div>
+
+        <h1 class="display-5 fw-extrabold text-white mb-0" style="max-width: 850px;">{{ course.course_title }}</h1>
+    </div>
+</section>
+
+<!-- 2-Column Content & Docked Action Workspace -->
+<div class="container py-4 py-lg-5">
+    <div class="row g-4 align-items-start">
         <!-- Main Course Content -->
         <div class="col-lg-8">
-            <div class="glass-inner-card mb-4">
-                <!-- Course Hero Image Banner -->
-                <div style="height: 320px; background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 20px 20px 0 0;">
-                    {% if course.course_image %}
-                        <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                    {% else %}
-                        <div class="text-center text-white p-4">
-                            <i class="bi bi-journal-richtext" style="font-size: 5rem; opacity: 0.85;"></i>
-                        </div>
-                    {% endif %}
-                    <span class="position-absolute top-0 start-0 m-3 badge px-3 py-2 rounded-pill fs-6" style="background:rgba(10,15,30,0.75); color:#38bdf8;">
-                        <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
-                    </span>
+            {% if course.course_image %}
+            <div class="cs-panel p-0 overflow-hidden mb-4">
+                <div style="height: 360px; overflow: hidden;">
+                    <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
+            </div>
+            {% endif %}
 
-                <!-- Course Title & Description -->
-                <div class="p-4 p-md-5">
-                    <div class="d-flex flex-wrap align-items-center gap-3 mb-3 small" style="color:rgba(255,255,255,0.5);">
-                        <span><i class="bi bi-calendar3 me-1" style="color:#38bdf8;"></i> Published: {{ course.created_date|date:"F d, Y" }}</span>
-                        <span><i class="bi bi-globe me-1" style="color:#38bdf8;"></i> English</span>
-                        <span><i class="bi bi-award me-1" style="color:#38bdf8;"></i> Certificate of Completion</span>
+            <div class="cs-panel p-4 p-md-5 mb-4">
+                <h4 class="fw-bold mb-3" style="color: var(--cs-text-title);">About this Course</h4>
+                <p style="color: var(--cs-text-body); font-size: 1.03rem; line-height: 1.8; white-space: pre-line;">
+                    {{ course.description }}
+                </p>
+
+                <hr style="border-color: var(--cs-border); margin: 2rem 0;">
+
+                <!-- Highlights Bento Box -->
+                <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);"><i class="bi bi-patch-check-fill me-2" style="color: var(--cs-primary);"></i> Course Highlights</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                            <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Self-paced flexible schedule</span>
+                        </div>
                     </div>
-
-                    <h1 class="glass-page-title display-6 mb-4">{{ course.course_title }}</h1>
-
-                    <h4 class="fw-bold mb-3" style="color:#e2e8f0;">About this Course</h4>
-                    <p style="color:rgba(255,255,255,0.65); font-size: 1.05rem; line-height: 1.8; white-space: pre-line;">
-                        {{ course.description }}
-                    </p>
-
-                    <hr style="border-color:rgba(255,255,255,0.1); margin:1.5rem 0;">
-
-                    <!-- Highlights Box -->
-                    <div class="glass-highlight-box">
-                        <h5><i class="bi bi-check2-circle me-1"></i> Course Highlights</h5>
-                        <div class="row g-2 mt-1">
-                            <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
-                                <span class="small" style="color:rgba(255,255,255,0.72);">Self-paced flexible schedule</span>
-                            </div>
-                            <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
-                                <span class="small" style="color:rgba(255,255,255,0.72);">Full lifetime access to resources</span>
-                            </div>
-                            <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
-                                <span class="small" style="color:rgba(255,255,255,0.72);">Direct mentor Q&A support</span>
-                            </div>
-                            <div class="col-sm-6 d-flex align-items-start gap-2">
-                                <i class="bi bi-check-lg fs-5" style="color:#2dd4bf;"></i>
-                                <span class="small" style="color:rgba(255,255,255,0.72);">Downloadable learning material</span>
-                            </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                            <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Full lifetime access to resources</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                            <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Direct mentor Q&A support</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                            <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Downloadable learning material</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Course Sidebar -->
-        <div class="col-lg-4">
-            <div class="glass-sidebar-card sticky-top" style="top: 90px;">
-                <div class="mb-3">
-                    <span class="small text-uppercase fw-bold d-block mb-1" style="color:rgba(255,255,255,0.5); letter-spacing:0.07em;">Enrollment Fee</span>
-                    <div class="display-5 fw-extrabold mt-1">
+        <!-- Sticky Enrollment Sidebar -->
+        <aside class="col-lg-4">
+            <div class="cs-panel p-4 sticky-top" style="top: 96px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-3" style="border-bottom: 1px solid var(--cs-border-light);">
+                    <span class="small text-uppercase fw-bold" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Enrollment Fee</span>
+                    <div class="fs-2 fw-extrabold" style="font-family: var(--font-mono);">
                         {% if course.price == 0 %}
-                            <span style="color:#4ade80;">Free</span>
+                            <span style="color: #10B981;">Free</span>
                         {% else %}
-                            <span style="color:#f1f5f9;">₹{{ course.price }}</span>
+                            <span style="color: var(--cs-primary);">₹{{ course.price }}</span>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mb-4">
                     {% if user.is_authenticated and user.student_profile %}
-                        <button class="glass-btn-primary" style="border:none; padding:0.85rem 1rem; border-radius:12px; font-size:1rem; font-weight:700;">
+                        <button class="glass-btn-primary" style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
                             <i class="bi bi-lightning-charge-fill me-1"></i> Enroll in Course
                         </button>
                     {% elif user.is_authenticated %}
@@ -100,7 +104,7 @@
                             Browsing as {{ user.username }}
                         </a>
                     {% else %}
-                        <a href="{% url 'student:student_login' %}?next={% url 'student:course_detail' course.id %}" class="glass-btn-primary d-block text-center text-decoration-none" style="padding:0.85rem 1rem; border-radius:12px; font-weight:700;">
+                        <a href="{% url 'student:student_login' %}?next={% url 'student:course_detail' course.id %}" class="glass-btn-primary d-block text-center text-decoration-none" style="padding: 0.85rem 1rem; border-radius: 12px;">
                             <i class="bi bi-box-arrow-in-right me-1"></i> Login to Enroll
                         </a>
                         <a href="{% url 'student:student_register' %}" class="glass-pill-btn justify-content-center">
@@ -110,29 +114,29 @@
                 </div>
 
                 <!-- Instructor Info Box -->
-                <div class="glass-instructor-box mb-3">
-                    <span class="small text-uppercase fw-bold d-block mb-2" style="color:rgba(255,255,255,0.45); letter-spacing:0.07em;">Instructor</span>
+                <div class="p-3 rounded-3 mb-3" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border);">
+                    <span class="small text-uppercase fw-bold d-block mb-2" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Instructor</span>
                     {% if course.instructor %}
                         <div class="d-flex align-items-center gap-3">
-                            <div style="width:46px; height:46px; border-radius:50%; background:rgba(124,58,237,0.25); color:#c084fc; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--cs-gradient-sphere); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
                                 <i class="bi bi-person-fill"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-0" style="color:#f1f5f9;">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</h6>
-                                <p class="small mb-0" style="color:rgba(255,255,255,0.5);">{{ course.instructor.specialization|default:"Lead Instructor" }}</p>
+                                <h6 class="fw-bold mb-0" style="color: var(--cs-text-title);">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</h6>
+                                <p class="small mb-0" style="color: var(--cs-text-muted);">{{ course.instructor.specialization|default:"Lead Instructor" }}</p>
                             </div>
                         </div>
                         {% if course.instructor.bio %}
-                            <p class="small mt-2 mb-0 pt-2" style="color:rgba(255,255,255,0.45); border-top:1px solid rgba(255,255,255,0.1);">{{ course.instructor.bio|truncatewords:25 }}</p>
+                            <p class="small mt-2 mb-0 pt-2" style="color: var(--cs-text-body); border-top: 1px solid var(--cs-border-light);">{{ course.instructor.bio|truncatewords:25 }}</p>
                         {% endif %}
                     {% else %}
                         <div class="d-flex align-items-center gap-3">
-                            <div style="width:46px; height:46px; border-radius:50%; background:rgba(13,148,136,0.2); color:#2dd4bf; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
-                                <i class="bi bi-mortarboard-fill"></i>
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--cs-gradient-sphere); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                <i class="bi bi-globe-americas"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-0" style="color:#f1f5f9;">CourseSphere Academic Faculty</h6>
-                                <p class="small mb-0" style="color:rgba(255,255,255,0.5);">Verified Course Content</p>
+                                <h6 class="fw-bold mb-0" style="color: var(--cs-text-title);">CourseSphere Academic Faculty</h6>
+                                <p class="small mb-0" style="color: var(--cs-text-muted);">Verified Course Content</p>
                             </div>
                         </div>
                     {% endif %}
@@ -140,13 +144,12 @@
 
                 <!-- Back link -->
                 <div class="text-center pt-2">
-                    <a href="{% url 'student:course_list' %}" class="glass-link small">
+                    <a href="{% url 'student:course_list' %}" class="small fw-semibold" style="color: var(--cs-primary);">
                         <i class="bi bi-arrow-left me-1"></i> Back to All Courses
                     </a>
                 </div>
             </div>
-        </div>
+        </aside>
     </div>
-  </div>
 </div>
 {% endblock %}

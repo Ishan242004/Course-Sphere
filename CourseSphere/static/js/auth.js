@@ -1,5 +1,5 @@
 /**
- * CourseSphere Authentication & Interactive Scripts
+ * CourseSphere Authentication & Interactive UI Scripts
  */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -71,10 +71,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 3. Form Submission Loading Indicator
     const authForms = document.querySelectorAll('.auth-form');
     authForms.forEach(form => {
-        form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', function () {
             const submitBtn = this.querySelector('button[type="submit"]');
             if (submitBtn && !submitBtn.disabled) {
-                // If form is valid HTML5-wise
                 if (this.checkValidity()) {
                     submitBtn.disabled = true;
                     const originalText = submitBtn.innerHTML;
@@ -104,6 +103,35 @@ document.addEventListener('DOMContentLoaded', function () {
     phoneInputs.forEach(input => {
         input.addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+    });
+
+    // 6. Dark / Light Theme Switcher (Desktop & Mobile buttons)
+    const themeBtns = [
+        document.getElementById('themeToggleBtn'),
+        document.getElementById('themeToggleBtnMobile'),
+    ].filter(Boolean);
+
+    const themeIcons = [
+        document.getElementById('themeToggleIcon'),
+        document.getElementById('themeToggleIconMobile'),
+    ].filter(Boolean);
+
+    function syncThemeIcons() {
+        const isDark = document.documentElement.classList.contains('dark');
+        themeIcons.forEach(icon => {
+            icon.className = isDark ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill';
+        });
+    }
+
+    syncThemeIcons();
+
+    themeBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('cs-theme', isDark ? 'dark' : 'light');
+            syncThemeIcons();
         });
     });
 });

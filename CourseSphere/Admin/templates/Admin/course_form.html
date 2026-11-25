@@ -8,7 +8,7 @@
 
 {% block content %}
 <div class="admin-app-layout">
-    <!-- Left Fixed Full-Height Sidebar -->
+    <!-- Left Fixed Rail Sidebar -->
     <aside class="admin-sidebar-pane">
         {% include 'Admin/sidebar.html' %}
     </aside>
@@ -17,69 +17,66 @@
     <div class="admin-content-pane">
         <div class="admin-content-container">
 
-            <!-- Floating Dark Glass Messages (Success/Error Notifications) -->
+            <!-- Floating Notifications -->
             {% if messages %}
             <div class="mb-4">
                 {% for message in messages %}
                 <div class="alert alert-{{ message.tags|default:'info' }} glass-alert alert-dismissible fade show d-flex align-items-center gap-3" role="alert">
                     {% if message.tags == 'danger' or message.tags == 'error' %}
-                        <i class="bi bi-exclamation-octagon-fill fs-4 text-danger flex-shrink-0"></i>
+                    <i class="bi bi-exclamation-octagon-fill fs-4 text-danger flex-shrink-0"></i>
                     {% elif message.tags == 'success' %}
-                        <i class="bi bi-check-circle-fill fs-4 text-success flex-shrink-0"></i>
+                    <i class="bi bi-check-circle-fill fs-4 text-success flex-shrink-0"></i>
                     {% elif message.tags == 'warning' %}
-                        <i class="bi bi-exclamation-triangle-fill fs-4 text-warning flex-shrink-0"></i>
+                    <i class="bi bi-exclamation-triangle-fill fs-4 text-warning flex-shrink-0"></i>
                     {% else %}
-                        <i class="bi bi-info-circle-fill fs-4 text-info flex-shrink-0"></i>
+                    <i class="bi bi-info-circle-fill fs-4 text-primary flex-shrink-0"></i>
                     {% endif %}
-                    <div class="fw-medium text-white" style="font-size: 0.95rem;">{{ message }}</div>
+                    <div class="fw-medium" style="font-size: 0.94rem;">{{ message }}</div>
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
 
-            <!-- Breadcrumb Navigation -->
-            <nav aria-label="breadcrumb" class="mb-3">
-                <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'home' %}">
-                            <i class="bi bi-house-door-fill me-1"></i> Home
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_portal:admin_dashboard' %}">
-                            <i class="bi bi-shield-check me-1"></i> Admin Cockpit
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <i class="bi bi-plus-circle me-1"></i> {{ action_title }}
-                    </li>
-                </ol>
-            </nav>
+            <!-- Header Card with Breadcrumb -->
+            <div class="cs-panel p-4 mb-4">
+                <nav aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'admin_portal:admin_dashboard' %}"><i class="bi bi-shield-check me-1"></i> Admin Cockpit</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="bi bi-plus-circle me-1"></i> {{ action_title }}
+                        </li>
+                    </ol>
+                </nav>
 
-            <!-- Header Section -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-                <div>
-                    <h1 class="glass-page-title display-6 mb-1">{{ action_title }}</h1>
-                    <p class="glass-page-subtitle mb-0">
-                        Configure curriculum information, pricing, media, and instructor assignment.
-                    </p>
-                </div>
-                <div>
-                    <a href="{% url 'admin_portal:course_list' %}" class="glass-pill-btn d-inline-flex align-items-center gap-2">
-                        <i class="bi bi-arrow-left"></i> Back to Courses
-                    </a>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <h1 class="display-6 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ action_title }}</h1>
+                        <p class="mb-0" style="color: var(--cs-text-muted);">
+                            Configure curriculum information, pricing, media, and instructor assignment.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{% url 'admin_portal:course_list' %}" class="glass-pill-btn d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-arrow-left"></i> Back to Courses
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Form Card -->
-            <div class="glass-inner-card p-4 p-md-5 mb-4">
+            <!-- Stepped Settings-Style Form Card -->
+            <div class="cs-panel p-4 p-md-5 mb-4">
                 <form method="POST" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
-                    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; border-radius:12px;">
-                        <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                    <div class="alert alert-danger glass-alert d-flex align-items-center gap-2 mb-4">
+                        <i class="bi bi-exclamation-octagon-fill fs-5 text-danger"></i>
                         <div>
                             {% for error in form.non_field_errors %}
                             <div>{{ error }}</div>
@@ -88,126 +85,120 @@
                     </div>
                     {% endif %}
 
-                    <!-- Section 1: Basic Information -->
-                    <div class="mb-4 pb-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="badge" style="background:rgba(56, 189, 248, 0.2); color:#38bdf8; font-size:0.8rem; padding: 0.4rem 0.75rem; border-radius:8px;">
+                    <!-- Section 1: Basic Information (2-Column Stepped Block) -->
+                    <div class="cs-form-section-row">
+                        <div>
+                            <span class="badge mb-2" style="background: var(--cs-primary-light); color: var(--cs-primary); border: 1px solid var(--cs-primary-border); font-size: 0.74rem; padding: 0.32rem 0.7rem; border-radius: 8px; font-family: var(--font-mono);">
                                 <i class="bi bi-info-circle-fill me-1"></i> Section 1
                             </span>
-                            <h5 class="fw-bold text-white mb-0">General Course Information</h5>
+                            <h5 class="fw-bold mb-1" style="color: var(--cs-text-title);">General Course Information</h5>
                         </div>
 
                         <div class="row g-3">
-                            <!-- Course Title -->
                             <div class="col-md-8">
-                                <label class="form-label">
-                                    <i class="bi bi-journal-bookmark" style="color:#38bdf8;"></i> Course Title <span class="text-danger">*</span>
+                                <label class="form-label fw-semibold" style="color: var(--cs-text-body);">
+                                    <i class="bi bi-journal-bookmark" style="color: var(--cs-primary);"></i> Course Title <span class="text-danger">*</span>
                                 </label>
                                 {{ form.course_title }}
                                 {% if form.course_title.errors %}
                                 <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.course_title.errors.0 }}</div>
                                 {% endif %}
-                                <div class="form-text small" style="color:rgba(255,255,255,0.45);">Minimum 3 characters long title.</div>
+                                <div class="form-text small" style="color: var(--cs-text-muted);">Minimum 3 characters long title.</div>
                             </div>
 
-                            <!-- Category -->
                             <div class="col-md-4">
-                                <label class="form-label">
-                                    <i class="bi bi-tag" style="color:#c084fc;"></i> Category <span class="text-danger">*</span>
+                                <label class="form-label fw-semibold" style="color: var(--cs-text-body);">
+                                    <i class="bi bi-tag" style="color: var(--cs-primary);"></i> Category <span class="text-danger">*</span>
                                 </label>
                                 {{ form.category }}
                                 {% if form.category.errors %}
                                 <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.category.errors.0 }}</div>
                                 {% endif %}
-                                <div class="form-text small" style="color:rgba(255,255,255,0.45);">e.g. Programming, Design, AI</div>
+                                <div class="form-text small" style="color: var(--cs-text-muted);">e.g. Programming, Design, AI</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Section 2: Pricing & Instructor Assignment -->
-                    <div class="mb-4 pb-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="badge" style="background:rgba(74, 222, 128, 0.2); color:#4ade80; font-size:0.8rem; padding: 0.4rem 0.75rem; border-radius:8px;">
+                    <div class="cs-form-section-row">
+                        <div>
+                            <span class="badge mb-2" style="background: rgba(0, 205, 204, 0.12); color: #00cdcc; border: 1px solid rgba(0, 205, 204, 0.3); font-size: 0.74rem; padding: 0.32rem 0.7rem; border-radius: 8px; font-family: var(--font-mono);">
                                 <i class="bi bi-wallet2 me-1"></i> Section 2
                             </span>
-                            <h5 class="fw-bold text-white mb-0">Pricing & Instructor</h5>
+                            <h5 class="fw-bold mb-1" style="color: var(--cs-text-title);">Pricing & Instructor</h5>
                         </div>
 
                         <div class="row g-3">
-                            <!-- Price -->
                             <div class="col-md-6">
-                                <label class="form-label">
-                                    <i class="bi bi-currency-rupee" style="color:#4ade80;"></i> Enrollment Fee / Price (₹) <span class="text-danger">*</span>
+                                <label class="form-label fw-semibold" style="color: var(--cs-text-body);">
+                                    <i class="bi bi-currency-rupee" style="color: var(--cs-primary);"></i> Enrollment Fee / Price (₹) <span class="text-danger">*</span>
                                 </label>
                                 {{ form.price }}
                                 {% if form.price.errors %}
                                 <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.price.errors.0 }}</div>
                                 {% endif %}
-                                <div class="form-text small" style="color:rgba(255,255,255,0.45);">Enter <strong>0.00</strong> to offer this course as <strong>Free</strong>.</div>
+                                <div class="form-text small" style="color: var(--cs-text-muted);">Enter <strong>0.00</strong> to offer this course as <strong>Free</strong>.</div>
                             </div>
 
-                            <!-- Instructor -->
                             <div class="col-md-6">
-                                <label class="form-label">
-                                    <i class="bi bi-person-badge" style="color:#fbbf24;"></i> Assigned Faculty / Instructor
+                                <label class="form-label fw-semibold" style="color: var(--cs-text-body);">
+                                    <i class="bi bi-person-badge" style="color: var(--cs-primary);"></i> Assigned Faculty / Instructor
                                 </label>
                                 {{ form.instructor }}
                                 {% if form.instructor.errors %}
                                 <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.instructor.errors.0 }}</div>
                                 {% endif %}
-                                <div class="form-text small" style="color:rgba(255,255,255,0.45);">Optional. Defaults to CourseSphere Faculty if unassigned.</div>
+                                <div class="form-text small" style="color: var(--cs-text-muted);">Optional. Defaults to CourseSphere Faculty if unassigned.</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Section 3: Media & Detailed Description -->
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="badge" style="background:rgba(192, 132, 252, 0.2); color:#c084fc; font-size:0.8rem; padding: 0.4rem 0.75rem; border-radius:8px;">
+                    <div class="cs-form-section-row">
+                        <div>
+                            <span class="badge mb-2" style="background: rgba(139, 92, 246, 0.12); color: #8B5CF6; border: 1px solid rgba(139, 92, 246, 0.25); font-size: 0.74rem; padding: 0.32rem 0.7rem; border-radius: 8px; font-family: var(--font-mono);">
                                 <i class="bi bi-card-image me-1"></i> Section 3
                             </span>
-                            <h5 class="fw-bold text-white mb-0">Media & Course Overview</h5>
+                            <h5 class="fw-bold mb-1" style="color: var(--cs-text-title);">Media & Course Overview</h5>
                         </div>
 
                         <div class="row g-3">
-                            <!-- Course Image -->
                             <div class="col-12">
-                                <label class="form-label">
-                                    <i class="bi bi-image" style="color:#38bdf8;"></i> Course Banner / Thumbnail Image
+                                <label class="form-label fw-semibold" style="color: var(--cs-text-body);">
+                                    <i class="bi bi-image" style="color: var(--cs-primary);"></i> Course Banner / Thumbnail Image
                                 </label>
                                 {{ form.course_image }}
                                 {% if form.course_image.errors %}
                                 <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.course_image.errors.0 }}</div>
                                 {% endif %}
-                                <div class="form-text small" style="color:rgba(255,255,255,0.45);">Supported formats: JPG, PNG, WEBP, GIF (Max size: 5MB).</div>
+                                <div class="form-text small" style="color: var(--cs-text-muted);">Supported formats: JPG, PNG, WEBP, GIF (Max size: 5MB).</div>
                                 {% if course and course.course_image %}
-                                <div class="d-flex align-items-center gap-2 mt-2 p-2 rounded" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-                                    <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width:60px; height:40px; object-fit:cover; border-radius:6px;">
-                                    <span class="small" style="color:rgba(255,255,255,0.7);">Current file: <strong>{{ course.course_image.name }}</strong></span>
+                                <div class="d-flex align-items-center gap-2 mt-2 p-2 rounded" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border);">
+                                    <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 6px;">
+                                    <span class="small" style="color: var(--cs-text-body);">Current file: <strong style="color: var(--cs-text-title);">{{ course.course_image.name }}</strong></span>
                                 </div>
                                 {% endif %}
                             </div>
 
-                            <!-- Course Description -->
                             <div class="col-12">
-                                <label class="form-label">
-                                    <i class="bi bi-file-earmark-text" style="color:#818cf8;"></i> Full Course Description <span class="text-danger">*</span>
+                                <label class="form-label fw-semibold" style="color: var(--cs-text-body);">
+                                    <i class="bi bi-file-earmark-text" style="color: var(--cs-primary);"></i> Full Course Description <span class="text-danger">*</span>
                                 </label>
                                 {{ form.description }}
                                 {% if form.description.errors %}
                                 <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.description.errors.0 }}</div>
                                 {% endif %}
-                                <div class="form-text small" style="color:rgba(255,255,255,0.45);">Detailed overview of modules, objectives, prerequisites, and learning outcomes (minimum 10 characters).</div>
+                                <div class="form-text small" style="color: var(--cs-text-muted);">Detailed overview of modules, objectives, prerequisites, and learning outcomes (minimum 10 characters).</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Submit / Action Buttons -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.1);">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-4" style="border-top: 1px solid var(--cs-border-light);">
                         <a href="{% url 'admin_portal:course_list' %}" class="glass-pill-btn px-4 py-2">
                             <i class="bi bi-x-circle me-1"></i> Cancel
                         </a>
-                        <button type="submit" class="glass-btn-primary d-inline-flex align-items-center gap-2" style="border:none; padding:0.75rem 2rem; border-radius:12px; font-weight:700; font-size:1rem; box-shadow:0 8px 24px rgba(2,132,199,0.4);">
+                        <button type="submit" class="glass-btn-primary d-inline-flex align-items-center gap-2" style="padding: 0.75rem 2rem; border-radius: 12px; font-weight: 700; font-size: 1rem;">
                             <i class="bi bi-check2-circle fs-5"></i> {{ button_text }}
                         </button>
                     </div>

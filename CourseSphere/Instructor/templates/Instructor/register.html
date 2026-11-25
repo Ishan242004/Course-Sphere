@@ -5,206 +5,211 @@
 
 {% block navbar %}{% endblock %}
 {% block messages %}{% endblock %}
+{% block footer %}{% endblock %}
 
 {% block content %}
-<div class="glass-login-wrapper">
-    <div class="glass-card glass-card-wide animate-fade-in">
-        <!-- Top Icon: Teacher/Educator -->
-        <div class="text-center mb-3">
-            <div class="d-inline-flex align-items-center justify-content-center"
-                style="font-size: 3.6rem; color: #ffffff; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));">
+<div class="auth-split-shell">
+    <!-- Left Architectural Brand Rail -->
+    <aside class="auth-brand-rail is-instructor">
+        <div class="position-relative" style="z-index: 2;">
+            <a href="{% url 'home' %}" class="d-inline-flex align-items-center gap-2 text-white text-decoration-none fw-bold fs-5">
+                <span class="brand-icon" style="width: 36px; height: 36px; font-size: 1.1rem; background: var(--cs-gradient-instructor);">
+                    <i class="bi bi-globe-americas"></i>
+                </span>
+                <span>CourseSphere</span>
+            </a>
+        </div>
+
+        <div class="position-relative my-5" style="z-index: 2;">
+            <div class="auth-role-icon mb-4">
                 <i class="bi bi-person-video3"></i>
             </div>
+            <h2 class="fw-extrabold text-white display-6 mb-3" style="letter-spacing: -0.03em;">
+                Instructor Registration
+            </h2>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.74); font-size: 1rem; line-height: 1.65; max-width: 360px;">
+                Join CourseSphere to create courses, mentor students, and share your expertise
+            </p>
         </div>
 
-        <!-- Heading -->
-        <h2 class="text-center text-white fw-bold mb-2" style="font-size: 1.85rem; letter-spacing: -0.02em;">
-            Instructor Registration
-        </h2>
-        <p class="text-center text-white-50 mb-4" style="font-size: 0.92rem; line-height: 1.4;">
-            Join CourseSphere to create courses, mentor students, and share your expertise
-        </p>
-
-        <!-- Django Flash Messages -->
-        {% if messages %}
-        <div class="mb-3">
-            {% for message in messages %}
-            <div
-                class="alert alert-{{ message.tags|default:'info' }} py-2 px-3 small rounded-3 mb-2 border-0 {% if message.tags == 'error' or message.tags == 'danger' %}bg-danger{% elif message.tags == 'success' %}bg-success{% else %}bg-primary{% endif %} text-white bg-opacity-75">
-                <i class="bi bi-info-circle me-1"></i> {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- Form Error Alert -->
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3 bg-danger text-white border-0 bg-opacity-75">
-            {% for error in form.non_field_errors %}
-            <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <form method="POST" action="{% url 'instructor:instructor_register' %}" class="auth-form" novalidate>
-            {% csrf_token %}
-
-            <!-- Name Row -->
-            <div class="row g-3 mb-3">
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">First Name *</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-person"></i></span>
-                        {{ form.first_name }}
-                    </div>
-                    {% if form.first_name.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.first_name.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Last Name *</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-person"></i></span>
-                        {{ form.last_name }}
-                    </div>
-                    {% if form.last_name.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.last_name.errors.0 }}</div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Username & Email Row -->
-            <div class="row g-3 mb-3">
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Username *</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-at"></i></span>
-                        {{ form.username }}
-                    </div>
-                    {% if form.username.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.username.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Email Address *</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-envelope"></i></span>
-                        {{ form.email }}
-                    </div>
-                    {% if form.email.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.email.errors.0 }}</div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Specialization & Phone Row -->
-            <div class="row g-3 mb-3">
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Specialization / Subject *</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-briefcase"></i></span>
-                        {{ form.specialization }}
-                    </div>
-                    {% if form.specialization.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.specialization.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Phone Number</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-telephone"></i></span>
-                        {{ form.phone }}
-                    </div>
-                    {% if form.phone.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.phone.errors.0 }}</div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Professional Bio -->
-            <div class="mb-3">
-                <label class="form-label text-white-50 small mb-1">Professional Bio / Experience</label>
-                {{ form.bio }}
-                {% if form.bio.errors %}
-                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.bio.errors.0 }}
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Password Row -->
-            <div class="row g-3 mb-4">
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Password *</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-lock"></i></span>
-                        {{ form.password }}
-                        <button type="button" class="btn-toggle-password" title="Toggle password visibility">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.password.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="col-sm-6">
-                    <label class="form-label text-white-50 small mb-1">Confirm Password *</label>
-                    <div class="input-group-custom">
-                        <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
-                        {{ form.confirm_password }}
-                        <button type="button" class="btn-toggle-password" title="Toggle password visibility">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                    <div id="password-match-feedback" class="form-text small"></div>
-                    {% if form.confirm_password.errors %}
-                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{
-                        form.confirm_password.errors.0 }}</div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Submit Button: Purple gradient button for instructor -->
-            <button type="submit" class="glass-btn-primary glass-btn-instructor">
-                <i class="bi bi-arrow-right-circle-fill me-2 fs-5"></i> Complete Registration
+        <div class="position-relative d-flex flex-wrap align-items-center justify-content-between gap-2 pt-3" style="z-index: 2; border-top: 1px solid rgba(255, 255, 255, 0.14);">
+            <span class="small" style="color: rgba(255, 255, 255, 0.6);">© 2026 CourseSphere Ecosystem</span>
+            <button id="themeToggleBtn" type="button" class="theme-toggle-btn" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff;" aria-label="Toggle theme">
+                <i class="bi bi-moon-stars-fill" id="themeToggleIcon"></i>
             </button>
-        </form>
-
-        <!-- OR Divider -->
-        <div class="glass-divider">
-            <span>OR</span>
         </div>
+    </aside>
 
-        <!-- Login Link -->
-        <div class="text-center mb-3">
-            <span class="text-white small">Already have an account?</span>
-            <a href="{% url 'instructor:instructor_login' %}" class="glass-link ms-1 small"
-                style="color: #c084fc !important;">Sign In to Instructor Account</a>
-        </div>
+    <!-- Right Clean Form Workspace -->
+    <main class="auth-form-stage">
+        <div class="auth-form-container animate-fade-in">
+            <!-- Django Flash Messages -->
+            {% if messages %}
+            <div class="mb-3">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} glass-alert py-2 px-3 small mb-2 d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle-fill text-primary"></i>
+                    <div class="fw-medium">{{ message }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
-        <!-- Admin Login Button -->
-        <div class="text-center">
-            <a href="{% url 'admin_portal:admin_login' %}" class="glass-pill-btn">
-                <i class="bi bi-shield-lock-fill me-1"></i> Admin Login
-            </a>
-        </div>
+            <!-- Form Error Alert -->
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger glass-alert py-2 px-3 small mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                <div>
+                    {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
-        <!-- Student Switcher Link -->
-        <div class="text-center mt-3 pt-2">
-            <a href="{% url 'student:student_register' %}" class="text-white-50 small text-decoration-none">
-                Are you a student? <span class="text-white text-decoration-underline">Register as Student &rarr;</span>
-            </a>
+            <form method="POST" action="{% url 'instructor:instructor_register' %}" class="auth-form" novalidate>
+                {% csrf_token %}
+
+                <!-- Name Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">First Name *</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-person"></i></span>
+                            {{ form.first_name }}
+                        </div>
+                        {% if form.first_name.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Last Name *</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-person"></i></span>
+                            {{ form.last_name }}
+                        </div>
+                        {% if form.last_name.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.last_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Username & Email Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Username *</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-at"></i></span>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Email Address *</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-envelope"></i></span>
+                            {{ form.email }}
+                        </div>
+                        {% if form.email.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Specialization & Phone Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Specialization / Subject *</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-briefcase"></i></span>
+                            {{ form.specialization }}
+                        </div>
+                        {% if form.specialization.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.specialization.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Phone Number</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-telephone"></i></span>
+                            {{ form.phone }}
+                        </div>
+                        {% if form.phone.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Professional Bio -->
+                <div class="mb-3">
+                    <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Professional Bio / Experience</label>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.bio.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Password Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Password *</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-lock"></i></span>
+                            {{ form.password }}
+                            <button type="button" class="btn-toggle-password" title="Toggle password visibility">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label class="form-label small mb-1 fw-semibold" style="color: var(--cs-text-body);">Confirm Password *</label>
+                        <div class="input-group-custom">
+                            <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
+                            {{ form.confirm_password }}
+                            <button type="button" class="btn-toggle-password" title="Toggle password visibility">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div id="password-match-feedback" class="form-text small"></div>
+                        {% if form.confirm_password.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ form.confirm_password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="glass-btn-primary glass-btn-instructor w-100" style="height: 50px; font-weight: 700; border-radius: 12px;">
+                    <i class="bi bi-arrow-right-circle-fill me-2 fs-5"></i> Complete Registration
+                </button>
+            </form>
+
+            <!-- OR Divider -->
+            <div class="glass-divider">
+                <span>OR</span>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center mb-3">
+                <span class="small" style="color: var(--cs-text-muted);">Already have an account?</span>
+                <a href="{% url 'instructor:instructor_login' %}" class="ms-1 small fw-bold" style="color: #8B5CF6;">Sign In to Instructor Account</a>
+            </div>
+
+            <!-- Student Switcher Link -->
+            <div class="text-center mt-3 pt-3" style="border-top: 1px solid var(--cs-border);">
+                <a href="{% url 'student:student_register' %}" class="small text-decoration-none" style="color: var(--cs-text-muted);">
+                    Are you a student? <span class="fw-semibold" style="color: var(--cs-primary);">Register as Student &rarr;</span>
+                </a>
+            </div>
         </div>
-    </div>
+    </main>
 </div>
 {% endblock %}
