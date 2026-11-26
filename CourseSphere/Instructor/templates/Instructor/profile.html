@@ -1,0 +1,114 @@
+{% extends 'Instructor/instructor_base.html' %}
+
+{% block title %}Instructor Profile — CourseSphere{% endblock %}
+
+{% block instructor_content %}
+<div class="cs-panel p-4 mb-4">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'instructor:instructor_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Profile</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h1 class="display-6 fw-extrabold mb-1" style="color: var(--cs-text-title);">Faculty Profile Settings</h1>
+            <p class="mb-0" style="color: var(--cs-text-muted);">Keep your instructor bio, specialization, and contact details up to date for learners.</p>
+        </div>
+        <div>
+            <a href="{% url 'instructor:instructor_dashboard' %}" class="glass-pill-btn d-inline-flex align-items-center gap-2">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 align-items-start">
+    <aside class="col-lg-4">
+        <div class="cs-panel p-0 overflow-hidden">
+            <div class="p-4 text-white" style="background: linear-gradient(155deg, #160c2e 0%, #24104c 55%, #1d2a73 100%);">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 56px; height: 56px; border-radius: 14px; background: var(--cs-gradient-instructor); display: flex; align-items: center; justify-content: center; font-size: 1.65rem; flex-shrink: 0;">
+                        <i class="bi bi-person-video3"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <h5 class="fw-bold text-white mb-0 text-truncate">{{ instructor.user.get_full_name|default:instructor.user.username }}</h5>
+                        <div class="small" style="color: rgba(255,255,255,0.75); font-family: var(--font-mono);">@{{ instructor.user.username }}</div>
+                    </div>
+                </div>
+                <span class="badge rounded-pill" style="background: rgba(168, 85, 247, 0.22); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.45);">
+                    {{ instructor.specialization|default:"Instructor" }}
+                </span>
+            </div>
+
+            <div class="p-4 small d-flex flex-column gap-2">
+                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid var(--cs-border-light);">
+                    <span style="color: var(--cs-text-muted);">Email</span>
+                    <strong style="color: var(--cs-text-title);">{{ instructor.user.email }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid var(--cs-border-light);">
+                    <span style="color: var(--cs-text-muted);">Phone</span>
+                    <strong style="color: var(--cs-text-title); font-family: var(--font-mono);">{{ instructor.phone|default:"Not set" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid var(--cs-border-light);">
+                    <span style="color: var(--cs-text-muted);">Owned Courses</span>
+                    <strong style="color: #8B5CF6; font-family: var(--font-mono);">{{ courses_count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span style="color: var(--cs-text-muted);">Enrolled Learners</span>
+                    <strong style="color: #10B981; font-family: var(--font-mono);">{{ students_count }}</strong>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="col-lg-8">
+        <div class="cs-panel p-4 p-md-5">
+            <h5 class="fw-bold mb-4" style="color: var(--cs-text-title);">
+                <i class="bi bi-pencil-square me-2" style="color: #8B5CF6;"></i>Update Profile Details
+            </h5>
+            <form method="POST" novalidate>
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Specialization <span class="text-danger">*</span></label>
+                        {{ form.specialization }}
+                        {% if form.specialization.errors %}<div class="text-danger small mt-1">{{ form.specialization.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Professional Bio</label>
+                        {{ form.bio }}
+                        {% if form.bio.errors %}<div class="text-danger small mt-1">{{ form.bio.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-3 pt-4 mt-4" style="border-top: 1px solid var(--cs-border-light);">
+                    <button type="submit" class="glass-btn-primary glass-btn-instructor px-5 py-2" style="font-weight: 700;">
+                        <i class="bi bi-check-circle-fill me-1"></i> Save Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

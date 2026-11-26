@@ -209,7 +209,7 @@ def course_list(request):
     Supports title and keyword search, category filtering, price filtering,
     and pagination (with query parameter preservation across page changes).
     """
-    courses = Course.objects.all().order_by('-created_date')
+    courses = Course.objects.filter(status='Published').order_by('-created_date')
 
     search_query = request.GET.get('q', '').strip()
     selected_category = request.GET.get('category', '').strip()
@@ -262,7 +262,7 @@ def course_list(request):
             pass
 
     # Get distinct categories from database for filter dropdown and pills
-    categories = Course.objects.values_list('category', flat=True).distinct().order_by('category')
+    categories = Course.objects.filter(status='Published').values_list('category', flat=True).distinct().order_by('category')
 
     total_matching_courses = courses.count()
 

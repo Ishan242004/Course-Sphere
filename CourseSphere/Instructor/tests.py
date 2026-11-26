@@ -4,8 +4,9 @@ from django.urls import reverse
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from Admin.models import Admin
 from Instructor.models import Instructor, Course
-from Student.models import Student
+from Student.models import Enrollment, Order, OrderItem, Student
 
 
 class InstructorAuthTests(TestCase):
@@ -151,4 +152,248 @@ class CourseModelTests(TestCase):
     def test_course_registered_in_admin(self):
         """Verify Course is registered in django.contrib.admin."""
         self.assertTrue(admin.site.is_registered(Course))
+
+
+class InstructorDashboardAndCourseTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.dashboard_url = reverse('instructor:instructor_dashboard')
+        self.courses_url = reverse('instructor:instructor_courses')
+        self.add_course_url = reverse('instructor:add_course')
+        self.profile_url = reverse('instructor:instructor_profile')
+
+        self.user_a = User.objects.create_user(
+            username='prof_ananya',
+            email='ananya@coursesphere.com',
+            password='Password123',
+            first_name='Ananya',
+            last_name='Sharma',
+        )
+        self.instructor_a = Instructor.objects.create(
+            user=self.user_a,
+            phone='9876543210',
+            specialization='Full-Stack Python',
+            bio='12 years building distributed Python systems.',
+        )
+
+        self.user_b = User.objects.create_user(
+            username='prof_vikram',
+            email='vikram@coursesphere.com',
+            password='Password123',
+            first_name='Vikram',
+            last_name='Desai',
+        )
+        self.instructor_b = Instructor.objects.create(
+            user=self.user_b,
+            specialization='UI Design',
+        )
+
+        self.course_a1 = Course.objects.create(
+            course_title='Django Production Systems',
+            category='Backend',
+            price=Decimal('499.00'),
+            status='Published',
+            description='Deep dive into scalable Django architecture and deployment.',
+            instructor=self.instructor_a,
+        )
+        self.course_a2 = Course.objects.create(
+            course_title='Async Python Draft Workshop',
+            category='Programming',
+            price=Decimal('0.00'),
+            status='Draft',
+            description='Upcoming interactive workshop on Python asyncio patterns.',
+            instructor=self.instructor_a,
+        )
+        self.course_b1 = Course.objects.create(
+            course_title='Secret Instructor B Figma Lab',
+            category='Design',
+            price=Decimal('799.00'),
+            status='Published',
+            description='Private UI design mastery owned strictly by instructor B.',
+            instructor=self.instructor_b,
+        )
+
+        stu1_user = User.objects.create_user(username='stu_one', email='s1@example.com', password='Password123', first_name='Karan', last_name='Patel')
+        stu2_user = User.objects.create_user(username='stu_two', email='s2@example.com', password='Password123', first_name='Meera', last_name='Joshi')
+        self.student1 = Student.objects.create(user=stu1_user, phone='9111111111', roll_number='STU-01')
+        self.student2 = Student.objects.create(user=stu2_user, phone='9222222222', roll_number='STU-02')
+
+        paid_order = Order.objects.create(
+            student=self.student1,
+            subtotal=Decimal('499.00'),
+            tax_amount=Decimal('89.82'),
+            total_amount=Decimal('588.82'),
+            payment_method='RAZORPAY',
+            razorpay_payment_id='pay_INST_TEST_01',
+            status='PAID',
+        )
+        OrderItem.objects.create(
+            order=paid_order,
+            course=self.course_a1,
+            course_title=self.course_a1.course_title,
+            price=self.course_a1.price,
+        )
+
+        Enrollment.objects.create(
+            student=self.student1,
+            course=self.course_a1,
+            order=paid_order,
+            status='Active',
+            payment_reference='pay_INST_TEST_01',
+        )
+        Enrollment.objects.create(
+            student=self.student2,
+            course=self.course_a1,
+            status='Enrolled',
+            payment_reference='ADMIN-MANUAL',
+        )
+        # Pending enrollment should NOT count in active enrolled students metric
+        Enrollment.objects.create(
+            student=self.student2,
+            course=self.course_a2,
+            status='Pending',
+        )
+        # Enrollment on Instructor B course should NOT leak into Instructor A metrics
+        Enrollment.objects.create(
+            student=self.student1,
+            course=self.course_b1,
+            status='Active',
+        )
+
+    def test_permissions_block_guests_students_and_non_instructors(self):
+        # Guest redirected to instructor login across protected endpoints
+        for url in [self.dashboard_url, self.courses_url, self.add_course_url, self.profile_url]:
+            res = self.client.get(url)
+            self.assertRedirects(res, f"{reverse('instructor:instructor_login')}?next={url}")
+
+        # Student user denied access
+        self.client.login(username='stu_one', password='Password123')
+        res = self.client.get(self.dashboard_url, follow=True)
+        self.assertRedirects(res, reverse('instructor:instructor_login'))
+        self.assertContains(res, "Access denied")
+        self.client.logout()
+
+        # Admin without instructor_profile also denied access to instructor cockpit
+        admin_user = User.objects.create_user(username='admin_only', password='Password123', is_staff=True)
+        Admin.objects.create(user=admin_user, phone='9999999999')
+        self.client.login(username='admin_only', password='Password123')
+        res_admin = self.client.get(self.dashboard_url)
+        self.assertRedirects(res_admin, reverse('instructor:instructor_login'))
+
+    def test_instructor_dashboard_renders_real_profile_metrics_and_owned_courses_only(self):
+        self.client.login(username='prof_ananya', password='Password123')
+        res = self.client.get(self.dashboard_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertTemplateUsed(res, 'Instructor/dashboard.html')
+
+        # Profile identity & contact details
+        self.assertContains(res, "Ananya Sharma")
+        self.assertContains(res, "ananya@coursesphere.com")
+        self.assertContains(res, "Full-Stack Python")
+        self.assertContains(res, "9876543210")
+
+        # Navigation links: Dashboard, My Courses, Add Course, Profile
+        self.assertContains(res, reverse('instructor:instructor_dashboard'))
+        self.assertContains(res, reverse('instructor:instructor_courses'))
+        self.assertContains(res, reverse('instructor:add_course'))
+        self.assertContains(res, reverse('instructor:instructor_profile'))
+        self.assertContains(res, "Dashboard")
+        self.assertContains(res, "My Courses")
+        self.assertContains(res, "Add Course")
+        self.assertContains(res, "Profile")
+
+        # Real DB statistics strictly scoped to instructor_a
+        stats = res.context['stats']
+        self.assertEqual(stats['total_courses'], 2)
+        self.assertEqual(stats['published_courses'], 1)
+        self.assertEqual(stats['draft_courses'], 1)
+        self.assertEqual(stats['total_enrollments'], 2)
+        self.assertEqual(stats['unique_students'], 2)
+        self.assertEqual(stats['total_revenue'], Decimal('499.00'))
+
+        # Instructor's own courses with title, category, price, status shown
+        self.assertContains(res, "Django Production Systems")
+        self.assertContains(res, "Backend")
+        self.assertContains(res, "₹499.00")
+        self.assertContains(res, "Published")
+        self.assertContains(res, "Async Python Draft Workshop")
+        self.assertContains(res, "Draft")
+
+        # Other instructor's course is NEVER exposed on dashboard or My Courses
+        self.assertNotContains(res, "Secret Instructor B Figma Lab")
+        courses_res = self.client.get(self.courses_url)
+        self.assertEqual(courses_res.status_code, 200)
+        self.assertContains(courses_res, "Django Production Systems")
+        self.assertNotContains(courses_res, "Secret Instructor B Figma Lab")
+
+    def test_instructor_course_crud_and_cross_instructor_isolation(self):
+        self.client.login(username='prof_ananya', password='Password123')
+
+        # Add Course automatically sets instructor=instructor_a
+        add_res = self.client.post(self.add_course_url, {
+            'course_title': 'Microservices with FastAPI',
+            'category': 'Backend',
+            'price': '299.00',
+            'status': 'Published',
+            'description': 'Design production-ready async APIs using FastAPI and Pydantic.',
+        }, follow=True)
+        self.assertRedirects(add_res, self.courses_url)
+        created = Course.objects.get(course_title='Microservices with FastAPI')
+        self.assertEqual(created.instructor, self.instructor_a)
+        self.assertEqual(created.status, 'Published')
+
+        # Edit own course
+        edit_res = self.client.post(reverse('instructor:edit_course', args=[created.id]), {
+            'course_title': 'Microservices with FastAPI Pro',
+            'category': 'Backend',
+            'price': '349.00',
+            'status': 'Draft',
+            'description': 'Updated syllabus with distributed tracing and Docker.',
+        }, follow=True)
+        self.assertRedirects(edit_res, self.courses_url)
+        created.refresh_from_db()
+        self.assertEqual(created.course_title, 'Microservices with FastAPI Pro')
+        self.assertEqual(created.status, 'Draft')
+
+        # View own course detail & active enrolled students
+        detail_res = self.client.get(reverse('instructor:course_detail', args=[self.course_a1.id]))
+        self.assertEqual(detail_res.status_code, 200)
+        self.assertContains(detail_res, "Karan Patel")
+        self.assertContains(detail_res, "₹499.00")
+
+        # Cross-instructor isolation: prof_ananya CANNOT view, edit, or delete course_b1
+        self.assertEqual(self.client.get(reverse('instructor:course_detail', args=[self.course_b1.id])).status_code, 404)
+        self.assertEqual(self.client.get(reverse('instructor:edit_course', args=[self.course_b1.id])).status_code, 404)
+        self.assertEqual(self.client.post(reverse('instructor:edit_course', args=[self.course_b1.id]), {
+            'course_title': 'Hacked Title',
+            'category': 'Hack',
+            'price': '0.00',
+            'status': 'Draft',
+            'description': 'Unauthorized edit attempt.',
+        }).status_code, 404)
+        self.assertEqual(self.client.post(reverse('instructor:delete_course', args=[self.course_b1.id])).status_code, 404)
+        self.course_b1.refresh_from_db()
+        self.assertEqual(self.course_b1.course_title, 'Secret Instructor B Figma Lab')
+
+        # Delete own course
+        del_res = self.client.post(reverse('instructor:delete_course', args=[created.id]), follow=True)
+        self.assertRedirects(del_res, self.courses_url)
+        self.assertFalse(Course.objects.filter(id=created.id).exists())
+
+    def test_instructor_profile_view_and_update(self):
+        self.client.login(username='prof_ananya', password='Password123')
+        res = self.client.post(self.profile_url, {
+            'first_name': 'Dr. Ananya',
+            'last_name': 'Verma',
+            'email': 'ananya.verma@coursesphere.com',
+            'phone': '9888877777',
+            'specialization': 'Distributed Cloud & Python',
+            'bio': 'Updated professor bio.',
+        }, follow=True)
+        self.assertRedirects(res, self.profile_url)
+        self.instructor_a.refresh_from_db()
+        self.assertEqual(self.instructor_a.user.first_name, 'Dr. Ananya')
+        self.assertEqual(self.instructor_a.specialization, 'Distributed Cloud & Python')
+        self.assertContains(res, "Updated professor bio.")
+
 

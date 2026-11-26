@@ -1,0 +1,203 @@
+{% extends 'Instructor/instructor_base.html' %}
+
+{% block title %}My Courses — Instructor Portal{% endblock %}
+
+{% block instructor_content %}
+<div class="cs-panel p-4 mb-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'instructor:instructor_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">My Courses</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3" style="border-bottom: 1px solid var(--cs-border-light);">
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <h1 class="display-6 fw-extrabold mb-0" style="color: var(--cs-text-title);">My Courses</h1>
+                <span class="badge" style="background: rgba(139, 92, 246, 0.14); color: #8B5CF6; border: 1px solid rgba(139, 92, 246, 0.35); font-size: 0.82rem; padding: 0.35rem 0.75rem; border-radius: 9999px; font-family: var(--font-mono);">
+                    {{ total_courses }} Course{{ total_courses|pluralize }}
+                </span>
+            </div>
+            <p class="mb-0" style="color: var(--cs-text-muted);">View, search, filter, update, or remove courses you teach on CourseSphere.</p>
+        </div>
+        <div>
+            <a href="{% url 'instructor:add_course' %}" class="glass-btn-primary glass-btn-instructor d-inline-flex align-items-center gap-2" style="padding: 0.65rem 1.4rem; font-weight: 700;">
+                <i class="bi bi-plus-circle-fill"></i> Add Course
+            </a>
+        </div>
+    </div>
+
+    <form method="GET" action="{% url 'instructor:instructor_courses' %}" class="row g-3 align-items-end">
+        <div class="col-md-5 col-lg-4">
+            <label class="form-label small text-uppercase fw-bold" style="color: var(--cs-text-muted); font-family: var(--font-mono); font-size: 0.72rem;">Search</label>
+            <div class="input-group-custom">
+                <span class="input-icon"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search your courses..." autocomplete="off">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small text-uppercase fw-bold" style="color: var(--cs-text-muted); font-family: var(--font-mono); font-size: 0.72rem;">Category</label>
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 col-lg-3">
+            <label class="form-label small text-uppercase fw-bold" style="color: var(--cs-text-muted); font-family: var(--font-mono); font-size: 0.72rem;">Status</label>
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="Published" {% if selected_status == 'Published' %}selected{% endif %}>Published</option>
+                <option value="Draft" {% if selected_status == 'Draft' %}selected{% endif %}>Draft</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="glass-btn-primary glass-btn-instructor flex-grow-1" style="height: 48px; border-radius: 10px;">
+                <i class="bi bi-filter"></i> Filter
+            </button>
+            {% if search_query or selected_category or selected_status %}
+            <a href="{% url 'instructor:instructor_courses' %}" class="glass-pill-btn d-inline-flex align-items-center justify-content-center" title="Reset" style="height: 48px; width: 48px; padding: 0;">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="glass-table-wrapper mb-4">
+    {% if courses %}
+    <div class="table-responsive">
+        <table class="glass-table align-middle">
+            <thead>
+                <tr>
+                    <th style="min-width: 240px;">Course Title</th>
+                    <th style="width: 140px;">Category</th>
+                    <th style="width: 115px;">Price</th>
+                    <th style="width: 115px;">Status</th>
+                    <th style="width: 120px;">Enrolled</th>
+                    <th style="width: 125px;">Created</th>
+                    <th class="text-end" style="width: 145px; padding-right: 1.5rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in courses %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 52px; height: 38px; border-radius: 8px; overflow: hidden; background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                {% if c.course_image %}
+                                <img src="{{ c.course_image.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                <i class="bi bi-globe-americas" style="color: #8B5CF6;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0">
+                                <a href="{% url 'instructor:course_detail' c.id %}" class="fw-bold text-decoration-none d-block" style="color: var(--cs-text-title); font-size: 0.94rem;">{{ c.course_title }}</a>
+                                <span class="small" style="color: var(--cs-text-muted); font-family: var(--font-mono);">ID #{{ c.id }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="white-space: nowrap;">
+                        <span class="course-filter-pill" style="font-size: 0.75rem; padding: 0.22rem 0.7rem;">{{ c.category }}</span>
+                    </td>
+                    <td style="white-space: nowrap;">
+                        {% if c.price == 0 %}
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10B981; font-family: var(--font-mono);">Free</span>
+                        {% else %}
+                        <span class="fw-bold" style="color: var(--cs-primary); font-family: var(--font-mono);">₹{{ c.price }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space: nowrap;">
+                        {% if c.status == 'Published' %}
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ c.status }}</span>
+                        {% else %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">{{ c.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space: nowrap;">
+                        <span class="fw-bold" style="color: var(--cs-text-title); font-family: var(--font-mono);">{{ c.enrolled_students }}</span>
+                        <span class="small" style="color: var(--cs-text-muted);">student{{ c.enrolled_students|pluralize }}</span>
+                    </td>
+                    <td style="white-space: nowrap; color: var(--cs-text-muted); font-size: 0.83rem;">
+                        {{ c.created_date|date:"M d, Y" }}
+                    </td>
+                    <td class="text-end" style="white-space: nowrap; padding-right: 1.5rem;">
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <a href="{% url 'instructor:course_detail' c.id %}" class="glass-pill-btn" title="Course Stats & Students" style="font-size: 0.82rem; width: 34px; height: 34px; padding: 0; border-radius: 9px;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'instructor:edit_course' c.id %}" class="glass-pill-btn" title="Edit Course" style="font-size: 0.82rem; width: 34px; height: 34px; padding: 0; border-radius: 9px; color: var(--cs-primary) !important; border-color: var(--cs-primary-border) !important;">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button type="button"
+                                    class="glass-pill-btn"
+                                    title="Delete Course"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#instructorDeleteModal"
+                                    data-delete-url="{% url 'instructor:delete_course' c.id %}"
+                                    data-delete-title="{{ c.course_title }}"
+                                    style="color: #ff6c35 !important; border-color: rgba(255, 108, 53, 0.35) !important; font-size: 0.82rem; width: 34px; height: 34px; padding: 0; border-radius: 9px;">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-4" style="border-top: 1px solid var(--cs-border-light);">
+        <div class="small" style="color: var(--cs-text-muted);">
+            Showing <strong style="color: var(--cs-text-title);">{{ page_obj.start_index }}</strong> to <strong style="color: var(--cs-text-title);">{{ page_obj.end_index }}</strong> of <strong style="color: var(--cs-text-title);">{{ total_courses }}</strong>
+        </div>
+        <ul class="pagination mb-0 gap-1">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link glass-pill-btn py-1 px-2" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link glass-btn-primary glass-btn-instructor py-1 px-3" style="border-radius: 8px;">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link glass-pill-btn py-1 px-3" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link glass-pill-btn py-1 px-2" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ page_obj.next_page_number }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-5 p-4">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(139, 92, 246, 0.12); color: #8B5CF6; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem;" class="mb-3">
+            <i class="bi bi-journal-bookmark"></i>
+        </div>
+        <h5 class="fw-bold mb-2" style="color: var(--cs-text-title);">No Courses Found</h5>
+        <p class="small mx-auto mb-4" style="max-width: 440px; color: var(--cs-text-muted);">
+            {% if search_query or selected_category or selected_status %}
+            No courses matched your current filters. Try clearing your filters.
+            {% else %}
+            You haven't created any courses yet. Add your first course to teach students on CourseSphere!
+            {% endif %}
+        </p>
+        <a href="{% url 'instructor:add_course' %}" class="glass-btn-primary glass-btn-instructor px-4 py-2 d-inline-flex align-items-center gap-2">
+            <i class="bi bi-plus-circle-fill"></i> Add First Course
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

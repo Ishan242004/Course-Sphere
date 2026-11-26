@@ -10,14 +10,14 @@ class InstructorAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('course_title', 'category', 'price', 'instructor', 'created_date', 'has_image')
-    list_filter = ('category', 'created_date', 'instructor')
+    list_display = ('course_title', 'category', 'price', 'status', 'instructor', 'created_date', 'has_image')
+    list_filter = ('status', 'category', 'created_date', 'instructor')
     search_fields = ('course_title', 'category', 'description')
     ordering = ('-created_date',)
     readonly_fields = ('created_date',)
     fieldsets = (
         ('Course Information', {
-            'fields': ('course_title', 'category', 'description', 'instructor')
+            'fields': ('course_title', 'category', 'status', 'description', 'instructor')
         }),
         ('Pricing & Media', {
             'fields': ('price', 'course_image')

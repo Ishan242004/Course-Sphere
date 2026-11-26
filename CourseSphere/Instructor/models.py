@@ -71,6 +71,11 @@ class CourseManager(models.Manager):
 
 
 class Course(models.Model):
+    STATUS_CHOICES = [
+        ('Published', 'Published'),
+        ('Draft', 'Draft'),
+    ]
+
     course_title = models.CharField(
         max_length=200,
         verbose_name="Course Title",
@@ -113,6 +118,13 @@ class Course(models.Model):
     created_date = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Created Date"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Published',
+        verbose_name="Status",
+        help_text="Published courses appear in the public catalog; Draft stays private."
     )
     instructor = models.ForeignKey(
         Instructor,

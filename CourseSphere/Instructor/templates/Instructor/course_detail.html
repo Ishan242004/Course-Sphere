@@ -1,0 +1,129 @@
+{% extends 'Instructor/instructor_base.html' %}
+
+{% block title %}{{ course.course_title }} — Course Analytics{% endblock %}
+
+{% block instructor_content %}
+<div class="cs-panel p-4 mb-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'instructor:instructor_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'instructor:instructor_courses' %}">My Courses</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ course.course_title|truncatechars:35 }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <span class="course-filter-pill">{{ course.category }}</span>
+                {% if course.status == 'Published' %}
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ course.status }}</span>
+                {% else %}
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">{{ course.status }}</span>
+                {% endif %}
+            </div>
+            <h1 class="fw-extrabold mb-1" style="font-size: 1.75rem; color: var(--cs-text-title);">{{ course.course_title }}</h1>
+            <div class="small" style="color: var(--cs-text-muted);">
+                Created {{ course.created_date|date:"F d, Y" }} · Price:
+                <strong style="color: var(--cs-primary); font-family: var(--font-mono);">{% if course.price == 0 %}Free{% else %}₹{{ course.price }}{% endif %}</strong>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'instructor:instructor_courses' %}" class="glass-pill-btn py-2 px-3">
+                <i class="bi bi-arrow-left"></i> My Courses
+            </a>
+            <a href="{% url 'instructor:edit_course' course.id %}" class="glass-btn-primary glass-btn-instructor py-2 px-4">
+                <i class="bi bi-pencil-square"></i> Edit Course
+            </a>
+            <button type="button"
+                    class="glass-pill-btn py-2 px-3 text-danger border-danger border-opacity-25"
+                    data-bs-toggle="modal"
+                    data-bs-target="#instructorDeleteModal"
+                    data-delete-url="{% url 'instructor:delete_course' course.id %}"
+                    data-delete-title="{{ course.course_title }}">
+                <i class="bi bi-trash3"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Course KPI Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="glass-stat-card" style="border-top: 3px solid var(--cs-sphere-cyan);">
+            <div class="small fw-bold text-uppercase mb-1" style="color: var(--cs-text-muted); font-family: var(--font-mono);">Active Enrolled Students</div>
+            <div class="display-6 fw-extrabold" style="color: var(--cs-text-title);">{{ enrollments.count }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-stat-card" style="border-top: 3px solid #10B981;">
+            <div class="small fw-bold text-uppercase mb-1" style="color: var(--cs-text-muted); font-family: var(--font-mono);">Verified Sales Revenue</div>
+            <div class="display-6 fw-extrabold" style="color: #10B981; font-family: var(--font-mono);">₹{{ course_revenue }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-stat-card" style="border-top: 3px solid #8B5CF6;">
+            <div class="small fw-bold text-uppercase mb-1" style="color: var(--cs-text-muted); font-family: var(--font-mono);">Listing Price</div>
+            <div class="display-6 fw-extrabold" style="color: var(--cs-primary); font-family: var(--font-mono);">{% if course.price == 0 %}Free{% else %}₹{{ course.price }}{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-lg-5">
+        <div class="cs-panel p-4">
+            <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);">Course Description</h5>
+            {% if course.course_image %}
+            <div class="mb-3 rounded-3 overflow-hidden" style="height: 200px; border: 1px solid var(--cs-border);">
+                <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% endif %}
+            <p class="small mb-0" style="color: var(--cs-text-body); line-height: 1.7; white-space: pre-line;">{{ course.description }}</p>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="glass-table-wrapper">
+            <div class="p-4 pb-3" style="border-bottom: 1px solid var(--cs-border-light);">
+                <h5 class="fw-bold mb-0" style="color: var(--cs-text-title);">
+                    <i class="bi bi-people-fill me-2" style="color: #10B981;"></i>Enrolled Students ({{ enrollments.count }})
+                </h5>
+            </div>
+            {% if enrollments %}
+            <div class="table-responsive">
+                <table class="glass-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Roll No</th>
+                            <th>Status</th>
+                            <th>Payment Ref</th>
+                            <th>Enrolled Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enr in enrollments %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold" style="color: var(--cs-text-title);">{{ enr.student.user.get_full_name|default:enr.student.user.username }}</div>
+                                <div class="small" style="color: var(--cs-text-muted);">{{ enr.student.user.email }}</div>
+                            </td>
+                            <td style="font-family: var(--font-mono);" class="small">{{ enr.student.roll_number|default:"—" }}</td>
+                            <td><span class="badge bg-success bg-opacity-10 text-success">{{ enr.status }}</span></td>
+                            <td class="small" style="font-family: var(--font-mono); color: var(--cs-text-muted);">{{ enr.payment_reference|default:"—" }}</td>
+                            <td class="small" style="color: var(--cs-text-muted);">{{ enr.enrolled_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 text-center">
+                <p class="small mb-0" style="color: var(--cs-text-muted);">No active enrollments for this course yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

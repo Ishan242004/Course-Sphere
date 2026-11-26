@@ -1,0 +1,72 @@
+{% load static %}
+{% with url_name=request.resolver_match.url_name %}
+<aside class="glass-admin-sidebar d-flex flex-column h-100">
+    <!-- Instructor Identity & Mobile Menu Toggle -->
+    <div class="sidebar-brand d-flex align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-3 overflow-hidden">
+            <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--cs-gradient-instructor); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.25rem; flex-shrink: 0;">
+                <i class="bi bi-person-video3"></i>
+            </div>
+            <div class="overflow-hidden">
+                <h6 class="fw-bold mb-0 text-truncate" style="font-size: 0.94rem; color: var(--cs-text-title);">
+                    {{ instructor.user.get_full_name|default:instructor.user.username }}
+                </h6>
+                <span class="badge" style="background: rgba(139, 92, 246, 0.14); color: #8B5CF6; border: 1px solid rgba(139, 92, 246, 0.35); font-size: 0.66rem; letter-spacing: 0.06em; font-weight: 700; border-radius: 9999px; padding: 0.18rem 0.5rem; font-family: var(--font-mono);">FACULTY PORTAL</span>
+            </div>
+        </div>
+        <button class="btn glass-pill-btn d-lg-none py-1 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#instructorSidebarNav" aria-expanded="false" aria-controls="instructorSidebarNav" aria-label="Toggle instructor menu">
+            <i class="bi bi-list fs-5"></i>
+        </button>
+    </div>
+
+    <!-- Collapsible on mobile/tablet, permanently open on desktop -->
+    <div id="instructorSidebarNav" class="collapse d-lg-flex flex-column flex-grow-1">
+        <div class="sidebar-heading">Overview</div>
+        <ul class="glass-sidebar-nav mb-3">
+            <li>
+                <a href="{% url 'instructor:instructor_dashboard' %}" class="nav-link {% if url_name == 'instructor_dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-heading">Course Studio</div>
+        <ul class="glass-sidebar-nav mb-3">
+            <li>
+                <a href="{% url 'instructor:instructor_courses' %}" class="nav-link {% if url_name == 'instructor_courses' or url_name == 'course_detail' or url_name == 'edit_course' %}active{% endif %}">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    <span>My Courses</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'instructor:add_course' %}" class="nav-link {% if url_name == 'add_course' %}active{% endif %}">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Add Course</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-heading">Account</div>
+        <ul class="glass-sidebar-nav mb-3">
+            <li>
+                <a href="{% url 'instructor:instructor_profile' %}" class="nav-link {% if url_name == 'instructor_profile' %}active{% endif %}">
+                    <i class="bi bi-person-badge-fill"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="glass-sidebar-footer mt-auto pt-3" style="border-top: 1px solid var(--cs-border-light);">
+            <ul class="glass-sidebar-nav">
+                <li>
+                    <a href="{% url 'instructor:instructor_logout' %}" class="nav-link nav-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Log Out</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</aside>
+{% endwith %}

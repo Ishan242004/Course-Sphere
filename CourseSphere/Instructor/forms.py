@@ -234,3 +234,135 @@ class ResetPasswordForm(forms.Form):
         if password and confirm_password and password != confirm_password:
             self.add_error('confirm_password', "Passwords do not match.")
         return cleaned_data
+
+
+from .models import Course
+
+
+class InstructorCourseForm(forms.ModelForm):
+    """Form allowing an instructor to create or update only their own courses."""
+
+    course_title = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g. Modern Python & Django Engineering',
+        })
+    )
+    category = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g. Programming, Design, Business, AI',
+        })
+    )
+    price = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=True,
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '0.00 (Enter 0 for Free)',
+            'step': '0.01',
+        })
+    )
+    status = forms.ChoiceField(
+        choices=Course.STATUS_CHOICES,
+        initial='Published',
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    description = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Course syllabus, key outcomes, and target audience (min 10 chars)...',
+        })
+    )
+    course_image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*',
+        })
+    )
+
+    class Meta:
+        model = Course
+        fields = ['course_title', 'category', 'price', 'status', 'description', 'course_image']
+
+
+class InstructorProfileForm(forms.Form):
+    """Profile update form for the authenticated Instructor."""
+
+    first_name = forms.CharField(
+        max_length=50,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First name'})
+    )
+    last_name = forms.CharField(
+        max_length=50,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last name'})
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'instructor@example.com'})
+    )
+    phone = forms.CharField(
+        max_length=15,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+91 9876543210'})
+    )
+    specialization = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Full-Stack Web Dev'})
+    )
+    bio = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Share your expertise and teaching philosophy...',
+        })
+    )
+
+    def __init__(self, *args, instructor=None, **kwargs):
+        self.instructor = instructor
+        if instructor and 'initial' not in kwargs:
+            kwargs['initial'] = {
+                'first_name': instructor.user.first_name,
+                'last_name': instructor.user.last_name,
+                'email': instructor.user.email,
+                'phone': instructor.phone or '',
+                'specialization': instructor.specialization or '',
+                'bio': instructor.bio or '',
+            }
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        qs = User.objects.filter(email__iexact=email)
+        if self.instructor:
+            qs = qs.exclude(pk=self.instructor.user_id)
+        if qs.exists():
+            raise forms.ValidationError("Another account already uses this email address.")
+        return email
+
+    def save(self) -> Instructor:
+        user = self.instructor.user
+        user.first_name = self.cleaned_data['first_name'].strip()
+        user.last_name = self.cleaned_data['last_name'].strip()
+        user.email = self.cleaned_data['email']
+        user.save(update_fields=['first_name', 'last_name', 'email'])
+
+        self.instructor.phone = self.cleaned_data.get('phone', '').strip()
+        self.instructor.specialization = self.cleaned_data['specialization'].strip()
+        self.instructor.bio = self.cleaned_data.get('bio', '').strip()
+        self.instructor.save(update_fields=['phone', 'specialization', 'bio'])
+        return self.instructor
