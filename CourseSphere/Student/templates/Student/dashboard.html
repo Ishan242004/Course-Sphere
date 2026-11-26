@@ -192,7 +192,10 @@
                         <div class="col">
                             <div class="glass-inner-card p-3 h-100 d-flex flex-column justify-content-between">
                                 <div>
-                                    <span class="badge mb-2" style="background: rgba(16, 185, 129, 0.12); color: #10B981; font-size: 0.72rem;">{{ enrollment.course.category }}</span>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                        <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10B981; font-size: 0.72rem;">{{ enrollment.course.category }}</span>
+                                        <span class="badge bg-success bg-opacity-10 text-success" style="font-size: 0.68rem;">{{ enrollment.status }}</span>
+                                    </div>
                                     <h6 class="fw-bold mb-1" style="color: var(--cs-text-title);">{{ enrollment.course.course_title }}</h6>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center pt-2 mt-2" style="border-top: 1px solid var(--cs-border-light);">

@@ -60,43 +60,64 @@
 
             <!-- Bento KPI Stats Strip -->
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="glass-stat-card" style="border-top: 3px solid var(--cs-sphere-cyan);">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="small fw-bold text-uppercase" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Total Students</span>
-                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(0, 205, 204, 0.12); color: #00cdcc; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                                <i class="bi bi-backpack2-fill"></i>
+                <div class="col-sm-6 col-xl-3">
+                    <a href="{% url 'admin_portal:student_list' %}" class="text-decoration-none d-block h-100">
+                        <div class="glass-stat-card h-100" style="border-top: 3px solid var(--cs-sphere-cyan);">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small fw-bold text-uppercase" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Total Students</span>
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(0, 205, 204, 0.12); color: #00cdcc; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="bi bi-backpack2-fill"></i>
+                                </div>
                             </div>
+                            <div class="display-5 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ stats.total_students }}</div>
+                            <span style="color: var(--cs-text-muted); font-size: 0.84rem;">Manage All Students →</span>
                         </div>
-                        <div class="display-5 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ stats.total_students }}</div>
-                        <span style="color: var(--cs-text-muted); font-size: 0.84rem;">Enrolled learners</span>
-                    </div>
+                    </a>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="glass-stat-card" style="border-top: 3px solid var(--cs-primary);">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="small fw-bold text-uppercase" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Total Instructors</span>
-                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(46, 103, 255, 0.12); color: var(--cs-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                                <i class="bi bi-person-video3"></i>
+                <div class="col-sm-6 col-xl-3">
+                    <a href="{% url 'admin_portal:instructor_list' %}" class="text-decoration-none d-block h-100">
+                        <div class="glass-stat-card h-100" style="border-top: 3px solid var(--cs-primary);">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small fw-bold text-uppercase" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Total Instructors</span>
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(46, 103, 255, 0.12); color: var(--cs-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="bi bi-person-video3"></i>
+                                </div>
                             </div>
+                            <div class="display-5 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ stats.total_instructors }}</div>
+                            <span style="color: var(--cs-text-muted); font-size: 0.84rem;">Manage All Instructors →</span>
                         </div>
-                        <div class="display-5 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ stats.total_instructors }}</div>
-                        <span style="color: var(--cs-text-muted); font-size: 0.84rem;">Faculty members</span>
-                    </div>
+                    </a>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="glass-stat-card" style="border-top: 3px solid #8B5CF6;">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="small fw-bold text-uppercase" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Total Courses</span>
-                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(139, 92, 246, 0.12); color: #8B5CF6; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                                <i class="bi bi-collection-play-fill"></i>
+                <div class="col-sm-6 col-xl-3">
+                    <a href="{% url 'admin_portal:course_list' %}" class="text-decoration-none d-block h-100">
+                        <div class="glass-stat-card h-100" style="border-top: 3px solid #8B5CF6;">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small fw-bold text-uppercase" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Total Courses</span>
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(139, 92, 246, 0.12); color: #8B5CF6; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="bi bi-collection-play-fill"></i>
+                                </div>
                             </div>
+                            <div class="display-5 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ stats.total_courses }}</div>
+                            <span style="color: var(--cs-text-muted); font-size: 0.84rem;">Manage All Courses →</span>
                         </div>
-                        <div class="display-5 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ stats.total_courses }}</div>
-                        <span style="color: var(--cs-text-muted); font-size: 0.84rem;">Published courses</span>
-                    </div>
+                    </a>
+                </div>
+
+                <div class="col-sm-6 col-xl-3">
+                    <a href="{% url 'admin_portal:receipt_list' %}" class="text-decoration-none d-block h-100">
+                        <div class="glass-stat-card h-100" style="border-top: 3px solid #10B981;">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small fw-bold text-uppercase" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Payment Receipts</span>
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="bi bi-receipt-cutoff"></i>
+                                </div>
+                            </div>
+                            <div class="display-5 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ stats.total_receipts }}</div>
+                            <span style="color: #10B981; font-size: 0.84rem; font-weight: 600; font-family: var(--font-mono);">₹{{ stats.total_revenue }} Paid →</span>
+                        </div>
+                    </a>
                 </div>
             </div>
 

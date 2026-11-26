@@ -517,7 +517,7 @@ class StudentCartAndPaymentTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertNotContains(res, "Select Payment Method")
         self.assertNotContains(res, 'name="payment_method"')
-        self.assertContains(res, "Pay ₹118.00 &amp; Enroll")
+        self.assertContains(res, "Pay ₹118.00 & Enroll")
         self.assertContains(res, "Secured by Razorpay")
 
     def test_free_course_checkout_bypasses_razorpay_and_enrolls_directly(self):
@@ -535,9 +535,13 @@ class StudentCartAndPaymentTests(TestCase):
 
         order = Order.objects.get(student=self.student)
         self.assertEqual(order.payment_method, 'FREE')
+        self.assertEqual(order.status, 'PAID')
         self.assertEqual(order.total_amount, Decimal('0.00'))
         self.assertEqual(Cart.objects.filter(student=self.student).count(), 0)
-        self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course_free).exists())
+        free_enrollment = Enrollment.objects.get(student=self.student, course=self.course_free)
+        self.assertEqual(free_enrollment.status, 'Active')
+        self.assertEqual(free_enrollment.order, order)
+        self.assertEqual(free_enrollment.payment_reference, order.order_id)
 
     @override_settings(RAZORPAY_KEY_ID='rzp_test_unit_key', RAZORPAY_KEY_SECRET='unit_test_secret_123')
     @patch('Student.views.create_razorpay_order')
@@ -569,27 +573,13 @@ class StudentCartAndPaymentTests(TestCase):
         mock_create_rzp_order.assert_called_once()
         self.assertEqual(mock_create_rzp_order.call_args.kwargs['amount_paise'], 28320)
 
-        # Before verification, cart remains intact and no Order exists
-        self.assertEqual(Order.objects.count(), 0)
+        # Before verification: Order is PENDING, Cart intact, ZERO enrollments created
+        pending_order = Order.objects.get(student=self.student, razorpay_order_id='order_TEST_RZP_123456')
+        self.assertEqual(pending_order.status, 'PENDING')
+        self.assertEqual(Enrollment.objects.count(), 0)
         self.assertEqual(Cart.objects.filter(student=self.student).count(), 2)
 
-        # Step 2a: Invalid signature must be rejected without unlocking courses
-        bad_verify = self.client.post(
-            self.verify_url,
-            data=json.dumps({
-                'razorpay_order_id': 'order_TEST_RZP_123456',
-                'razorpay_payment_id': 'pay_TEST_987654',
-                'razorpay_signature': 'invalid_tampered_signature',
-            }),
-            content_type='application/json',
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
-        )
-        self.assertEqual(bad_verify.status_code, 400)
-        self.assertFalse(bad_verify.json()['ok'])
-        self.assertEqual(Order.objects.count(), 0)
-        self.assertEqual(Cart.objects.filter(student=self.student).count(), 2)
-
-        # Step 2b: Valid HMAC-SHA256 signature succeeds and unlocks courses
+        # Step 2: Valid HMAC-SHA256 signature succeeds and unlocks courses automatically
         rzp_payment_id = 'pay_TEST_987654'
         valid_signature = hmac.new(
             b'unit_test_secret_123',
@@ -610,6 +600,8 @@ class StudentCartAndPaymentTests(TestCase):
         self.assertEqual(verify_res.status_code, 200)
         verify_payload = verify_res.json()
         self.assertTrue(verify_payload['ok'])
+        self.assertFalse(verify_payload['duplicate'])
+        self.assertEqual(verify_payload['enrolled_count'], 2)
 
         order = Order.objects.get(student=self.student)
         self.assertEqual(order.subtotal, Decimal('300.00'))
@@ -624,6 +616,15 @@ class StudentCartAndPaymentTests(TestCase):
         self.assertEqual(order.status, 'PAID')
         self.assertEqual(order.items.count(), 2)
 
+        # Automatic Enrollments created with Active status, enrolled_at, and payment_reference
+        enr1 = Enrollment.objects.get(student=self.student, course=self.course_one)
+        enr2 = Enrollment.objects.get(student=self.student, course=self.course_two)
+        for enr in (enr1, enr2):
+            self.assertEqual(enr.status, 'Active')
+            self.assertEqual(enr.payment_reference, rzp_payment_id)
+            self.assertEqual(enr.order, order)
+            self.assertIsNotNone(enr.enrolled_at)
+
         # Receipt page displays Order ID, Payment ID, Method, and Paid Total
         receipt_res = self.client.get(verify_payload['redirect_url'])
         self.assertEqual(receipt_res.status_code, 200)
@@ -633,20 +634,170 @@ class StudentCartAndPaymentTests(TestCase):
         self.assertContains(receipt_res, "Razorpay")
         self.assertContains(receipt_res, "₹283.20")
 
-        # Cart is now empty, Enrollments created
+        # Cart is now empty
         self.assertEqual(Cart.objects.filter(student=self.student).count(), 0)
-        self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course_one).exists())
-        self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course_two).exists())
 
-        # Student dashboard displays enrolled courses & order receipt
+        # Student dashboard & course detail recognize active enrollment
         dash_res = self.client.get(reverse('student:student_dashboard'))
         self.assertContains(dash_res, "Full Stack Python Mastery")
         self.assertContains(dash_res, "System Design Architecture")
         self.assertContains(dash_res, order.order_id)
+        detail_res = self.client.get(reverse('student:course_detail', args=[self.course_one.id]))
+        self.assertContains(detail_res, "Enrolled ✓")
 
         # Already enrolled course cannot be re-added to cart
         readd_res = self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]), follow=True)
         self.assertContains(readd_res, "already enrolled")
         self.assertEqual(Cart.objects.filter(student=self.student).count(), 0)
+
+    @override_settings(RAZORPAY_KEY_ID='rzp_test_unit_key', RAZORPAY_KEY_SECRET='unit_test_secret_123')
+    @patch('Student.views.create_razorpay_order')
+    def test_failed_and_cancelled_payment_does_not_enroll_and_updates_only_after_success(self, mock_create_rzp_order):
+        # Pre-existing Pending enrollment record must NOT become Active until verified payment succeeds
+        existing_enr = Enrollment.objects.create(
+            student=self.student,
+            course=self.course_one,
+            status='Pending',
+            payment_reference='',
+        )
+
+        mock_create_rzp_order.side_effect = [
+            {'id': 'order_FAIL_SIG_1', 'amount': 11800, 'currency': 'INR'},
+            {'id': 'order_FAIL_CANCEL_2', 'amount': 11800, 'currency': 'INR'},
+            {'id': 'order_RETRY_SUCCESS_3', 'amount': 11800, 'currency': 'INR'},
+        ]
+
+        self.client.login(username='cart_student', password='Password123')
+        self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
+
+        # Scenario A: Signature tampering fails backend verification
+        self.client.post(self.checkout_url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        bad_verify = self.client.post(
+            self.verify_url,
+            data=json.dumps({
+                'razorpay_order_id': 'order_FAIL_SIG_1',
+                'razorpay_payment_id': 'pay_BAD_001',
+                'razorpay_signature': 'invalid_tampered_signature',
+            }),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(bad_verify.status_code, 400)
+        self.assertFalse(bad_verify.json()['ok'])
+        self.assertEqual(Order.objects.get(razorpay_order_id='order_FAIL_SIG_1').status, 'FAILED')
+        existing_enr.refresh_from_db()
+        self.assertEqual(existing_enr.status, 'Pending')
+        self.assertEqual(existing_enr.payment_reference, '')
+        self.assertEqual(Cart.objects.filter(student=self.student).count(), 1)
+
+        # Scenario B: Payment cancelled / failed via modal callback
+        self.client.post(self.checkout_url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        fail_res = self.client.post(
+            reverse('student:razorpay_failed'),
+            data=json.dumps({'razorpay_order_id': 'order_FAIL_CANCEL_2', 'reason': 'Modal dismissed'}),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(fail_res.status_code, 200)
+        self.assertEqual(Order.objects.get(razorpay_order_id='order_FAIL_CANCEL_2').status, 'FAILED')
+        existing_enr.refresh_from_db()
+        self.assertEqual(existing_enr.status, 'Pending')
+        self.assertEqual(Cart.objects.filter(student=self.student).count(), 1)
+
+        # Scenario C: Retry succeeds -> updates existing Pending Enrollment record to Active
+        self.client.post(self.checkout_url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        rzp_payment_id = 'pay_RETRY_OK_3'
+        sig = hmac.new(
+            b'unit_test_secret_123',
+            f"order_RETRY_SUCCESS_3|{rzp_payment_id}".encode(),
+            hashlib.sha256,
+        ).hexdigest()
+        ok_res = self.client.post(
+            self.verify_url,
+            data=json.dumps({
+                'razorpay_order_id': 'order_RETRY_SUCCESS_3',
+                'razorpay_payment_id': rzp_payment_id,
+                'razorpay_signature': sig,
+            }),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(ok_res.status_code, 200)
+        self.assertEqual(Enrollment.objects.filter(student=self.student, course=self.course_one).count(), 1)
+        existing_enr.refresh_from_db()
+        self.assertEqual(existing_enr.status, 'Active')
+        self.assertEqual(existing_enr.payment_reference, rzp_payment_id)
+        self.assertEqual(existing_enr.order.razorpay_order_id, 'order_RETRY_SUCCESS_3')
+
+    @override_settings(RAZORPAY_KEY_ID='rzp_test_unit_key', RAZORPAY_KEY_SECRET='unit_test_secret_123')
+    @patch('Student.views.create_razorpay_order')
+    def test_duplicate_verification_and_replayed_payment_prevented(self, mock_create_rzp_order):
+        mock_create_rzp_order.side_effect = [
+            {'id': 'order_FIRST_100', 'amount': 11800, 'currency': 'INR'},
+            {'id': 'order_SECOND_200', 'amount': 23600, 'currency': 'INR'},
+        ]
+
+        self.client.login(username='cart_student', password='Password123')
+        self.client.post(reverse('student:add_to_cart', args=[self.course_one.id]))
+        self.client.post(self.checkout_url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        sig1 = hmac.new(
+            b'unit_test_secret_123',
+            b"order_FIRST_100|pay_UNIQUE_100",
+            hashlib.sha256,
+        ).hexdigest()
+
+        # First verification succeeds
+        res1 = self.client.post(
+            self.verify_url,
+            data=json.dumps({
+                'razorpay_order_id': 'order_FIRST_100',
+                'razorpay_payment_id': 'pay_UNIQUE_100',
+                'razorpay_signature': sig1,
+            }),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(res1.status_code, 200)
+        self.assertFalse(res1.json()['duplicate'])
+
+        # Duplicate verification callback for the same order returns idempotently without duplicating records
+        res_dup = self.client.post(
+            self.verify_url,
+            data=json.dumps({
+                'razorpay_order_id': 'order_FIRST_100',
+                'razorpay_payment_id': 'pay_UNIQUE_100',
+                'razorpay_signature': sig1,
+            }),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(res_dup.status_code, 200)
+        self.assertTrue(res_dup.json()['duplicate'])
+        self.assertEqual(Order.objects.filter(razorpay_order_id='order_FIRST_100').count(), 1)
+        self.assertEqual(Enrollment.objects.filter(student=self.student, course=self.course_one).count(), 1)
+
+        # Replay attack using the same razorpay_payment_id on a second course order must fail (409)
+        self.client.post(reverse('student:add_to_cart', args=[self.course_two.id]))
+        self.client.post(self.checkout_url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        sig_replay = hmac.new(
+            b'unit_test_secret_123',
+            b"order_SECOND_200|pay_UNIQUE_100",
+            hashlib.sha256,
+        ).hexdigest()
+        replay_res = self.client.post(
+            self.verify_url,
+            data=json.dumps({
+                'razorpay_order_id': 'order_SECOND_200',
+                'razorpay_payment_id': 'pay_UNIQUE_100',
+                'razorpay_signature': sig_replay,
+            }),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(replay_res.status_code, 409)
+        self.assertTrue(replay_res.json()['duplicate'])
+        self.assertFalse(Enrollment.objects.filter(student=self.student, course=self.course_two).exists())
+        self.assertEqual(Order.objects.get(razorpay_order_id='order_SECOND_200').status, 'PENDING')
 
 

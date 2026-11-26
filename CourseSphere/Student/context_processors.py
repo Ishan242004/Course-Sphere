@@ -12,7 +12,10 @@ def cart_context(request):
         coupon_code = request.session.get('cart_coupon', '')
         summary = calculate_cart_summary(items, coupon_code=coupon_code)
         enrolled_ids = set(
-            Enrollment.objects.filter(student=student).values_list('course_id', flat=True)
+            Enrollment.objects.filter(
+                student=student,
+                status__in=Enrollment.ACTIVE_STATUSES,
+            ).values_list('course_id', flat=True)
         )
         return {
             'cart_count': summary['item_count'],

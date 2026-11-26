@@ -1,0 +1,126 @@
+{% extends 'Admin/admin_base.html' %}
+
+{% block title %}Receipt {{ order.order_id }} — CourseSphere Admin{% endblock %}
+
+{% block admin_content %}
+<div class="cs-panel p-4 mb-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_portal:admin_dashboard' %}">Admin Cockpit</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_portal:receipt_list' %}">Payment Receipts</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ order.order_id }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <h2 class="fw-extrabold mb-0" style="color: var(--cs-text-title); font-family: var(--font-mono);">{{ order.order_id }}</h2>
+                {% if order.status == 'PAID' %}
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">PAID</span>
+                {% elif order.status == 'PENDING' %}
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">PENDING</span>
+                {% else %}
+                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">FAILED</span>
+                {% endif %}
+            </div>
+            <div class="small" style="color: var(--cs-text-muted);">
+                Created on {{ order.created_at|date:"F d, Y · h:i A" }} · {{ order.get_payment_method_display }}
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" onclick="window.print()" class="glass-pill-btn py-2 px-3">
+                <i class="bi bi-printer"></i> Print
+            </button>
+            <a href="{% url 'admin_portal:edit_receipt' order.order_id %}" class="glass-btn-primary py-2 px-4">
+                <i class="bi bi-pencil-square"></i> Edit Receipt
+            </a>
+            <button type="button"
+                    class="glass-pill-btn py-2 px-3 text-danger border-danger border-opacity-25"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adminDeleteModal"
+                    data-delete-url="{% url 'admin_portal:delete_receipt' order.order_id %}"
+                    data-delete-title="{{ order.order_id }}"
+                    data-delete-entity="Payment Receipt"
+                    data-delete-warning="Deleting this receipt removes linked course enrollments for this order.">
+                <i class="bi bi-trash3"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-lg-7">
+        <div class="cs-panel p-4 mb-4">
+            <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);"><i class="bi bi-collection-play-fill me-2" style="color: var(--cs-primary);"></i>Purchased Courses ({{ order.items.count }})</h5>
+            <div class="d-flex flex-column gap-2">
+                {% for item in order.items.all %}
+                <div class="glass-inner-card p-3 d-flex justify-content-between align-items-center gap-2">
+                    <div>
+                        <div class="fw-bold" style="color: var(--cs-text-title);">{{ item.course_title }}</div>
+                        {% if item.course %}<div class="small" style="color: var(--cs-text-muted);">{{ item.course.category }}</div>{% endif %}
+                    </div>
+                    <strong style="color: var(--cs-primary); font-family: var(--font-mono);">{% if item.price == 0 %}Free{% else %}₹{{ item.price }}{% endif %}</strong>
+                </div>
+                {% empty %}
+                <p class="small mb-0" style="color: var(--cs-text-muted);">No line items found on this receipt.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="cs-panel p-4">
+            <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);"><i class="bi bi-person-badge me-2" style="color: var(--cs-primary);"></i>Student Account</h5>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <div class="fw-bold" style="color: var(--cs-text-title);">{{ order.student.user.get_full_name|default:order.student.user.username }}</div>
+                    <div class="small" style="color: var(--cs-text-muted); font-family: var(--font-mono);">@{{ order.student.user.username }} · {{ order.student.user.email }}</div>
+                </div>
+                <a href="{% url 'admin_portal:student_detail' order.student.id %}" class="glass-pill-btn py-1 px-3 small">View Student Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="cs-panel p-4">
+            <h5 class="fw-bold mb-3 pb-3" style="color: var(--cs-text-title); border-bottom: 1px solid var(--cs-border-light);">
+                <i class="bi bi-receipt me-2" style="color: var(--cs-primary);"></i> Financial Breakdown
+            </h5>
+            <div class="d-flex justify-content-between small mb-2">
+                <span style="color: var(--cs-text-muted);">Method</span>
+                <strong style="color: var(--cs-text-title);">{{ order.get_payment_method_display }}</strong>
+            </div>
+            {% if order.razorpay_order_id %}
+            <div class="d-flex justify-content-between small mb-2">
+                <span style="color: var(--cs-text-muted);">Razorpay Order ID</span>
+                <strong style="color: var(--cs-text-title); font-family: var(--font-mono); font-size: 0.78rem;">{{ order.razorpay_order_id }}</strong>
+            </div>
+            {% endif %}
+            {% if order.razorpay_payment_id %}
+            <div class="d-flex justify-content-between small mb-3 pb-2" style="border-bottom: 1px solid var(--cs-border-light);">
+                <span style="color: var(--cs-text-muted);">Razorpay Payment ID</span>
+                <strong style="color: var(--cs-text-title); font-family: var(--font-mono); font-size: 0.78rem;">{{ order.razorpay_payment_id }}</strong>
+            </div>
+            {% endif %}
+            <div class="d-flex justify-content-between small mb-2">
+                <span style="color: var(--cs-text-muted);">Subtotal</span>
+                <strong style="color: var(--cs-text-title); font-family: var(--font-mono);">₹{{ order.subtotal }}</strong>
+            </div>
+            {% if order.discount_amount > 0 %}
+            <div class="d-flex justify-content-between small mb-2 text-success">
+                <span>Discount ({{ order.coupon_code }})</span>
+                <strong style="font-family: var(--font-mono);">-₹{{ order.discount_amount }}</strong>
+            </div>
+            {% endif %}
+            <div class="d-flex justify-content-between small mb-3 pb-3" style="border-bottom: 1px solid var(--cs-border);">
+                <span style="color: var(--cs-text-muted);">GST (18%)</span>
+                <strong style="color: var(--cs-text-title); font-family: var(--font-mono);">₹{{ order.tax_amount }}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold" style="color: var(--cs-text-title);">Total Payable</span>
+                <span class="fs-4 fw-extrabold" style="color: #10B981; font-family: var(--font-mono);">₹{{ order.total_amount }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

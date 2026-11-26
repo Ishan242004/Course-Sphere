@@ -1,10 +1,10 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
 from decimal import Decimal
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
 from Admin.models import Admin
-from Student.models import Student
-from Instructor.models import Instructor, Course
+from Instructor.models import Course, Instructor
+from Student.models import Enrollment, Order, Student
 
 
 class AdminAuthTests(TestCase):
@@ -203,4 +203,168 @@ class AdminCourseManagementTests(TestCase):
         response = self.client.post(delete_url, follow=True)
         self.assertRedirects(response, self.dashboard_url)
         self.assertFalse(Course.objects.filter(id=course.id).exists())
+
+
+class AdminEntitiesCRUDTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin_user = User.objects.create_user(
+            username='crud_admin',
+            email='crud_admin@coursesphere.com',
+            password='AdminPassword123',
+        )
+        Admin.objects.create(user=self.admin_user, phone='9999999999')
+        self.client.login(username='crud_admin', password='AdminPassword123')
+
+    def test_sidebar_and_dashboard_expose_students_instructors_and_receipts(self):
+        response = self.client.get(reverse('admin_portal:admin_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse('admin_portal:student_list'))
+        self.assertContains(response, reverse('admin_portal:instructor_list'))
+        self.assertContains(response, reverse('admin_portal:receipt_list'))
+        self.assertContains(response, "All Students")
+        self.assertContains(response, "All Instructors")
+        self.assertContains(response, "Payment Receipts")
+
+    def test_admin_student_full_crud(self):
+        # Create
+        create_res = self.client.post(reverse('admin_portal:add_student'), {
+            'first_name': 'Neha',
+            'last_name': 'Verma',
+            'username': 'neha_v',
+            'email': 'neha@example.com',
+            'password': 'StrongPassword123',
+            'confirm_password': 'StrongPassword123',
+            'is_active': 'on',
+            'roll_number': 'STU-501',
+            'phone': '9123456789',
+        }, follow=True)
+        self.assertRedirects(create_res, reverse('admin_portal:student_list'))
+        student = Student.objects.get(user__username='neha_v')
+        self.assertEqual(student.roll_number, 'STU-501')
+
+        # Read (List & Detail)
+        list_res = self.client.get(reverse('admin_portal:student_list'), {'q': 'STU-501'})
+        self.assertContains(list_res, 'Neha Verma')
+        detail_res = self.client.get(reverse('admin_portal:student_detail', args=[student.id]))
+        self.assertEqual(detail_res.status_code, 200)
+        self.assertContains(detail_res, 'STU-501')
+
+        # Update
+        edit_res = self.client.post(reverse('admin_portal:edit_student', args=[student.id]), {
+            'first_name': 'Neha',
+            'last_name': 'Kapoor',
+            'username': 'neha_v',
+            'email': 'neha@example.com',
+            'password': '',
+            'confirm_password': '',
+            'is_active': 'on',
+            'roll_number': 'STU-509',
+            'phone': '9123456780',
+        }, follow=True)
+        self.assertRedirects(edit_res, reverse('admin_portal:student_list'))
+        student.refresh_from_db()
+        self.assertEqual(student.user.last_name, 'Kapoor')
+        self.assertEqual(student.roll_number, 'STU-509')
+
+        # Delete
+        del_res = self.client.post(reverse('admin_portal:delete_student', args=[student.id]), follow=True)
+        self.assertRedirects(del_res, reverse('admin_portal:student_list'))
+        self.assertFalse(Student.objects.filter(id=student.id).exists())
+        self.assertFalse(User.objects.filter(username='neha_v').exists())
+
+    def test_admin_instructor_full_crud(self):
+        # Create
+        create_res = self.client.post(reverse('admin_portal:add_instructor'), {
+            'first_name': 'Dr. Aarav',
+            'last_name': 'Mehta',
+            'username': 'aarav_prof',
+            'email': 'aarav@example.com',
+            'password': 'ProfPassword123',
+            'confirm_password': 'ProfPassword123',
+            'is_active': 'on',
+            'specialization': 'Cloud Architecture',
+            'phone': '9811122233',
+            'bio': '10 years teaching distributed cloud systems.',
+        }, follow=True)
+        self.assertRedirects(create_res, reverse('admin_portal:instructor_list'))
+        inst = Instructor.objects.get(user__username='aarav_prof')
+
+        # Read (List & Detail)
+        list_res = self.client.get(reverse('admin_portal:instructor_list'), {'specialization': 'Cloud Architecture'})
+        self.assertContains(list_res, 'aarav_prof')
+        detail_res = self.client.get(reverse('admin_portal:instructor_detail', args=[inst.id]))
+        self.assertContains(detail_res, 'Cloud Architecture')
+
+        # Update
+        self.client.post(reverse('admin_portal:edit_instructor', args=[inst.id]), {
+            'first_name': 'Prof. Aarav',
+            'last_name': 'Mehta',
+            'username': 'aarav_prof',
+            'email': 'aarav@example.com',
+            'password': '',
+            'confirm_password': '',
+            'is_active': 'on',
+            'specialization': 'Kubernetes & DevOps',
+            'phone': '9811122233',
+            'bio': 'Updated faculty bio.',
+        }, follow=True)
+        inst.refresh_from_db()
+        self.assertEqual(inst.specialization, 'Kubernetes & DevOps')
+
+        # Delete
+        self.client.post(reverse('admin_portal:delete_instructor', args=[inst.id]), follow=True)
+        self.assertFalse(Instructor.objects.filter(id=inst.id).exists())
+
+    def test_admin_payment_receipt_full_crud(self):
+        s_user = User.objects.create_user(username='pay_stu', email='pay_stu@example.com', password='Password123')
+        student = Student.objects.create(user=s_user, phone='9876500001', roll_number='STU-R1')
+        c1 = Course.objects.create(course_title='Django API Pro', category='Backend', price=Decimal('100.00'), description='Build clean Django REST APIs.')
+        c2 = Course.objects.create(course_title='React UI Lab', category='Frontend', price=Decimal('200.00'), description='Modern component design in React.')
+
+        # Create Paid Receipt (100 - 10% = 90 + 18% GST = 106.20)
+        create_res = self.client.post(reverse('admin_portal:add_receipt'), {
+            'student': student.id,
+            'courses': [c1.id],
+            'coupon_code': 'SPHERE10',
+            'payment_method': 'RAZORPAY',
+            'status': 'PAID',
+            'razorpay_order_id': 'order_ADMIN_001',
+            'razorpay_payment_id': 'pay_ADMIN_001',
+        }, follow=True)
+        self.assertEqual(create_res.status_code, 200)
+        order = Order.objects.get(student=student)
+        self.assertEqual(order.total_amount, Decimal('106.20'))
+        self.assertEqual(order.status, 'PAID')
+        enr1 = Enrollment.objects.get(student=student, course=c1)
+        self.assertEqual(enr1.status, 'Active')
+        self.assertEqual(enr1.payment_reference, 'pay_ADMIN_001')
+
+        # Read (List & Detail)
+        list_res = self.client.get(reverse('admin_portal:receipt_list'), {'q': order.order_id})
+        self.assertContains(list_res, order.order_id)
+        self.assertContains(list_res, '₹106.20')
+
+        # Update (Change courses & status)
+        edit_res = self.client.post(reverse('admin_portal:edit_receipt', args=[order.order_id]), {
+            'student': student.id,
+            'courses': [c2.id],
+            'coupon_code': '',
+            'payment_method': 'RAZORPAY',
+            'status': 'PAID',
+            'razorpay_order_id': 'order_ADMIN_001',
+            'razorpay_payment_id': 'pay_ADMIN_001',
+        }, follow=True)
+        self.assertEqual(edit_res.status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.total_amount, Decimal('236.00'))
+        self.assertFalse(Enrollment.objects.filter(student=student, course=c1).exists())
+        self.assertTrue(Enrollment.objects.filter(student=student, course=c2, status='Active').exists())
+
+        # Delete
+        del_res = self.client.post(reverse('admin_portal:delete_receipt', args=[order.order_id]), follow=True)
+        self.assertRedirects(del_res, reverse('admin_portal:receipt_list'))
+        self.assertFalse(Order.objects.filter(order_id=order.order_id).exists())
+        self.assertFalse(Enrollment.objects.filter(student=student, course=c2).exists())
+
 

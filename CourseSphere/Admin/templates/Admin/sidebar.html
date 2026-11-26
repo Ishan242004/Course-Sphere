@@ -1,4 +1,5 @@
 {% load static %}
+{% with url_name=request.resolver_match.url_name %}
 <aside class="glass-admin-sidebar d-flex flex-column h-100">
     <!-- Admin User Profile Banner -->
     <div class="sidebar-brand d-flex align-items-center gap-3">
@@ -15,7 +16,7 @@
     <div class="sidebar-heading">Navigation</div>
     <ul class="glass-sidebar-nav mb-3">
         <li>
-            <a href="{% url 'admin_portal:admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+            <a href="{% url 'admin_portal:admin_dashboard' %}" class="nav-link {% if url_name == 'admin_dashboard' %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
@@ -26,15 +27,43 @@
     <div class="sidebar-heading">Course Management</div>
     <ul class="glass-sidebar-nav mb-3">
         <li>
-            <a href="{% url 'admin_portal:add_course' %}" class="nav-link {% if request.resolver_match.url_name == 'add_course' %}active{% endif %}">
+            <a href="{% url 'admin_portal:add_course' %}" class="nav-link {% if url_name == 'add_course' %}active{% endif %}">
                 <i class="bi bi-plus-circle-fill"></i>
                 <span>Add Course</span>
             </a>
         </li>
         <li>
-            <a href="{% url 'admin_portal:course_list' %}" class="nav-link {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}">
+            <a href="{% url 'admin_portal:course_list' %}" class="nav-link {% if url_name == 'course_list' or url_name == 'edit_course' %}active{% endif %}">
                 <i class="bi bi-journal-text"></i>
                 <span>All Courses</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- People Directory Section -->
+    <div class="sidebar-heading">People Directory</div>
+    <ul class="glass-sidebar-nav mb-3">
+        <li>
+            <a href="{% url 'admin_portal:student_list' %}" class="nav-link {% if url_name == 'student_list' or url_name == 'add_student' or url_name == 'student_detail' or url_name == 'edit_student' %}active{% endif %}">
+                <i class="bi bi-backpack2-fill"></i>
+                <span>All Students</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'admin_portal:instructor_list' %}" class="nav-link {% if url_name == 'instructor_list' or url_name == 'add_instructor' or url_name == 'instructor_detail' or url_name == 'edit_instructor' %}active{% endif %}">
+                <i class="bi bi-person-video3"></i>
+                <span>All Instructors</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Finance & Billing Section -->
+    <div class="sidebar-heading">Finance &amp; Billing</div>
+    <ul class="glass-sidebar-nav mb-3">
+        <li>
+            <a href="{% url 'admin_portal:receipt_list' %}" class="nav-link {% if url_name == 'receipt_list' or url_name == 'add_receipt' or url_name == 'receipt_detail' or url_name == 'edit_receipt' %}active{% endif %}">
+                <i class="bi bi-receipt-cutoff"></i>
+                <span>Payment Receipts</span>
             </a>
         </li>
     </ul>
@@ -51,3 +80,4 @@
         </ul>
     </div>
 </aside>
+{% endwith %}

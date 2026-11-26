@@ -311,6 +311,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            function markAttemptFailed(reason) {
+                if (!data.failed_url) return;
+                fetch(data.failed_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        razorpay_order_id: data.razorpay_order_id,
+                        reason: reason || '',
+                    }),
+                }).catch(() => {});
+            }
+
             const options = {
                 key: data.key,
                 amount: data.amount,
@@ -354,18 +371,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 modal: {
                     ondismiss: function () {
+                        markAttemptFailed('Payment window cancelled by student');
                         resetButton();
-                        showNotice('warning', 'Payment window closed. Your selected courses are still saved in your cart.');
+                        showNotice('warning', 'Payment window closed. No enrollment was made and your cart items are still saved.');
                     },
                 },
             };
 
             const rzp = new window.Razorpay(options);
             rzp.on('payment.failed', function (failure) {
-                resetButton();
                 const desc = failure && failure.error && failure.error.description
                     ? failure.error.description
                     : 'Payment failed inside Razorpay. Please try again.';
+                markAttemptFailed(desc);
+                resetButton();
                 showNotice('danger', desc);
             });
             rzp.open();

@@ -1,0 +1,42 @@
+{% if is_paginated %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-4" style="border-top: 1px solid var(--cs-border-light);">
+    <div class="small" style="color: var(--cs-text-muted);">
+        Showing <span class="fw-bold" style="color: var(--cs-text-title);">{{ page_obj.start_index }}</span> to <span class="fw-bold" style="color: var(--cs-text-title);">{{ page_obj.end_index }}</span> of <span class="fw-bold" style="color: var(--cs-text-title);">{{ total_count }}</span>
+    </div>
+    <ul class="pagination mb-0 gap-1">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link glass-pill-btn py-1 px-2" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page=1" title="First Page">
+                <i class="bi bi-chevron-double-left"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link glass-pill-btn py-1 px-2" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ page_obj.previous_page_number }}" title="Previous">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link glass-btn-primary py-1 px-3" style="border-radius: 8px;">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link glass-pill-btn py-1 px-3" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link glass-pill-btn py-1 px-2" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ page_obj.next_page_number }}" title="Next">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link glass-pill-btn py-1 px-2" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ page_obj.paginator.num_pages }}" title="Last Page">
+                <i class="bi bi-chevron-double-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}

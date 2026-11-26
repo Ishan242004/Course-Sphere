@@ -1,0 +1,162 @@
+{% extends 'Admin/admin_base.html' %}
+
+{% block title %}All Students — CourseSphere Admin{% endblock %}
+
+{% block admin_content %}
+<!-- Integrated Header & Search Toolbar -->
+<div class="cs-panel p-4 mb-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_portal:admin_dashboard' %}"><i class="bi bi-shield-check me-1"></i> Admin Cockpit</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-backpack2-fill me-1"></i> All Students</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3" style="border-bottom: 1px solid var(--cs-border-light);">
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <h1 class="display-6 fw-extrabold mb-0" style="color: var(--cs-text-title);">All Students Directory</h1>
+                <span class="badge" style="background: rgba(0, 205, 204, 0.14); color: #00cdcc; border: 1px solid rgba(0, 205, 204, 0.35); font-size: 0.82rem; padding: 0.35rem 0.75rem; border-radius: 9999px; font-family: var(--font-mono);">
+                    {{ total_students }} Student{{ total_students|pluralize }}
+                </span>
+            </div>
+            <p class="mb-0" style="color: var(--cs-text-muted);">Create, view, edit, or manage registered student accounts and enrollments.</p>
+        </div>
+        <div>
+            <a href="{% url 'admin_portal:add_student' %}" class="glass-btn-primary d-inline-flex align-items-center gap-2" style="padding: 0.65rem 1.4rem; font-weight: 700;">
+                <i class="bi bi-person-plus-fill"></i> Add New Student
+            </a>
+        </div>
+    </div>
+
+    <form method="GET" action="{% url 'admin_portal:student_list' %}" class="row g-3 align-items-end">
+        <div class="col-md-6 col-lg-5">
+            <label class="form-label small text-uppercase fw-bold" style="color: var(--cs-text-muted); font-family: var(--font-mono); font-size: 0.72rem;">
+                <i class="bi bi-search me-1" style="color: var(--cs-primary);"></i> Search Students
+            </label>
+            <div class="input-group-custom">
+                <span class="input-icon"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Name, username, email, phone, roll no..." autocomplete="off">
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-4">
+            <label class="form-label small text-uppercase fw-bold" style="color: var(--cs-text-muted); font-family: var(--font-mono); font-size: 0.72rem;">
+                <i class="bi bi-funnel me-1" style="color: var(--cs-primary);"></i> Account Status
+            </label>
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Accounts</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive Accounts</option>
+            </select>
+        </div>
+        <div class="col-md-2 col-lg-3 d-flex gap-2">
+            <button type="submit" class="glass-btn-primary flex-grow-1" style="height: 48px; border-radius: 10px;">
+                <i class="bi bi-filter"></i> Apply
+            </button>
+            {% if search_query or status_filter %}
+            <a href="{% url 'admin_portal:student_list' %}" class="glass-pill-btn d-inline-flex align-items-center justify-content-center" title="Reset Filters" style="height: 48px; width: 48px; padding: 0;">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Students Table -->
+<div class="glass-table-wrapper mb-4">
+    {% if students %}
+    <div class="table-responsive">
+        <table class="glass-table align-middle">
+            <thead>
+                <tr>
+                    <th style="min-width: 220px;">Student</th>
+                    <th style="width: 140px;">Roll Number</th>
+                    <th style="min-width: 200px;">Contact</th>
+                    <th style="width: 110px;">Enrolled</th>
+                    <th style="width: 110px;">Status</th>
+                    <th style="width: 130px;">Joined</th>
+                    <th class="text-end" style="width: 145px; padding-right: 1.5rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: var(--cs-gradient-sphere); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+                                {{ s.user.first_name|default:s.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold" style="color: var(--cs-text-title); font-size: 0.94rem;">{{ s.user.get_full_name|default:s.user.username }}</div>
+                                <div class="small" style="color: var(--cs-text-muted); font-family: var(--font-mono);">@{{ s.user.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="white-space: nowrap;">
+                        <span class="badge" style="background: var(--cs-primary-light); color: var(--cs-primary); border: 1px solid var(--cs-primary-border); font-family: var(--font-mono);">
+                            {{ s.roll_number|default:"N/A" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="small" style="color: var(--cs-text-title);">{{ s.user.email|default:"—" }}</div>
+                        <div class="small" style="color: var(--cs-text-muted); font-family: var(--font-mono);">{{ s.phone|default:"No phone" }}</div>
+                    </td>
+                    <td style="white-space: nowrap;">
+                        <span class="fw-bold" style="color: var(--cs-primary); font-family: var(--font-mono);">{{ s.enrollments_count }}</span>
+                        <span class="small" style="color: var(--cs-text-muted);">course{{ s.enrollments_count|pluralize }}</span>
+                    </td>
+                    <td style="white-space: nowrap;">
+                        {% if s.user.is_active %}
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space: nowrap; color: var(--cs-text-muted); font-size: 0.83rem;">
+                        {{ s.created_at|date:"M d, Y" }}
+                    </td>
+                    <td class="text-end" style="white-space: nowrap; padding-right: 1.5rem;">
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <a href="{% url 'admin_portal:student_detail' s.id %}" class="glass-pill-btn" title="View Student" style="font-size: 0.82rem; width: 34px; height: 34px; padding: 0; border-radius: 9px;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'admin_portal:edit_student' s.id %}" class="glass-pill-btn" title="Edit Student" style="font-size: 0.82rem; width: 34px; height: 34px; padding: 0; border-radius: 9px; color: var(--cs-primary) !important; border-color: var(--cs-primary-border) !important;">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button type="button"
+                                    class="glass-pill-btn"
+                                    title="Delete Student"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#adminDeleteModal"
+                                    data-delete-url="{% url 'admin_portal:delete_student' s.id %}"
+                                    data-delete-title="{{ s.user.get_full_name|default:s.user.username }}"
+                                    data-delete-entity="Student"
+                                    data-delete-warning="Deleting this student removes their account, cart items, enrollments, and payment history."
+                                    style="color: #ff6c35 !important; border-color: rgba(255, 108, 53, 0.35) !important; font-size: 0.82rem; width: 34px; height: 34px; padding: 0; border-radius: 9px;">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'Admin/includes/pagination.html' with total_count=total_students %}
+    {% else %}
+    <div class="text-center py-5 p-4">
+        <div style="width: 68px; height: 68px; border-radius: 50%; background: var(--cs-primary-light); border: 1px solid var(--cs-primary-border); display: inline-flex; align-items: center; justify-content: center; color: var(--cs-primary); font-size: 1.9rem;" class="mb-3">
+            <i class="bi bi-backpack2"></i>
+        </div>
+        <h5 class="fw-bold mb-2" style="color: var(--cs-text-title);">No Students Found</h5>
+        <p style="color: var(--cs-text-muted); max-width: 440px;" class="mx-auto mb-4">
+            {% if search_query or status_filter %}No students matched your current filters.{% else %}No students have been registered yet.{% endif %}
+        </p>
+        <a href="{% url 'admin_portal:add_student' %}" class="glass-btn-primary px-4 py-2 d-inline-flex align-items-center gap-2">
+            <i class="bi bi-person-plus-fill"></i> Add First Student
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

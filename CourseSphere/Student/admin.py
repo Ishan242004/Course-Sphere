@@ -42,6 +42,6 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Enrollment)
 class EnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('student', 'course', 'order', 'enrolled_at')
-    list_filter = ('enrolled_at',)
-    search_fields = ('student__user__username', 'course__course_title')
+    list_display = ('student', 'course', 'status', 'payment_reference', 'order', 'enrolled_at')
+    list_filter = ('status', 'enrolled_at')
+    search_fields = ('student__user__username', 'course__course_title', 'payment_reference', 'order__order_id')

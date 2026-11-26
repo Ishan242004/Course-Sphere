@@ -6,6 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import JsonResponse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
@@ -105,7 +106,10 @@ def student_dashboard(request):
         return redirect('student:student_login')
 
     student = request.user.student_profile
-    enrollments = Enrollment.objects.filter(student=student).select_related('course', 'course__instructor__user')
+    enrollments = Enrollment.objects.filter(
+        student=student,
+        status__in=Enrollment.ACTIVE_STATUSES,
+    ).select_related('course', 'course__instructor__user')
     orders = Order.objects.filter(student=student, status='PAID').prefetch_related('items')[:5]
     cart_summary = _get_cart_summary_for_student(request, student)
     return render(request, 'Student/dashboard.html', {
@@ -375,7 +379,7 @@ def add_to_cart(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     student = request.user.student_profile
 
-    if Enrollment.objects.filter(student=student, course=course).exists():
+    if Enrollment.objects.filter(student=student, course=course, status__in=Enrollment.ACTIVE_STATUSES).exists():
         msg = f"You are already enrolled in '{course.course_title}'."
         if _is_ajax(request):
             summary = _get_cart_summary_for_student(request, student)
@@ -485,18 +489,15 @@ def apply_coupon(request):
     return redirect('student:cart')
 
 
-def _complete_order_and_enrollments(
-    request,
+def _create_order_record(
     student,
     payable_items,
     summary,
     payment_method='RAZORPAY',
     razorpay_order_id='',
-    razorpay_payment_id='',
-    razorpay_signature='',
+    status='PENDING',
 ) -> Order:
-    """Atomically create Order, OrderItems, Enrollments and clear purchased Cart rows."""
-    course_ids = [item.course_id for item in payable_items]
+    """Create an Order and itemized OrderItem snapshot rows atomically."""
     with transaction.atomic():
         order = Order.objects.create(
             student=student,
@@ -507,9 +508,7 @@ def _complete_order_and_enrollments(
             coupon_code=summary['coupon_code'],
             payment_method=payment_method,
             razorpay_order_id=razorpay_order_id,
-            razorpay_payment_id=razorpay_payment_id,
-            razorpay_signature=razorpay_signature,
-            status='PAID',
+            status=status,
         )
         for item in payable_items:
             OrderItem.objects.create(
@@ -518,16 +517,31 @@ def _complete_order_and_enrollments(
                 course_title=item.course.course_title,
                 price=item.course.price,
             )
-            Enrollment.objects.get_or_create(
-                student=student,
-                course=item.course,
-                defaults={'order': order},
-            )
-        Cart.objects.filter(student=student, course_id__in=course_ids).delete()
-
-    request.session.pop('cart_coupon', None)
-    request.session.pop('pending_razorpay_order', None)
     return order
+
+
+def _sync_enrollments_for_order(student, order, payment_reference: str) -> int:
+    """Create or activate Enrollment records strictly after verified payment success."""
+    now = timezone.now()
+    activated_count = 0
+    for item in order.items.select_related('course'):
+        if not item.course:
+            continue
+        existing = Enrollment.objects.filter(student=student, course=item.course).first()
+        if existing and existing.status in Enrollment.ACTIVE_STATUSES:
+            continue
+        Enrollment.objects.update_or_create(
+            student=student,
+            course=item.course,
+            defaults={
+                'order': order,
+                'status': 'Active',
+                'payment_reference': payment_reference,
+                'enrolled_at': now,
+            },
+        )
+        activated_count += 1
+    return activated_count
 
 
 @login_required(login_url='student:student_login')
@@ -552,9 +566,12 @@ def checkout(request):
         messages.warning(request, msg)
         return redirect('student:course_list')
 
-    # Exclude any course that may already be enrolled concurrently
+    # Exclude courses already actively enrolled to prevent duplicate enrollment
     already_enrolled = set(
-        Enrollment.objects.filter(student=student).values_list('course_id', flat=True)
+        Enrollment.objects.filter(
+            student=student,
+            status__in=Enrollment.ACTIVE_STATUSES,
+        ).values_list('course_id', flat=True)
     )
     payable_items = [item for item in cart_items if item.course_id not in already_enrolled]
     if not payable_items:
@@ -570,13 +587,19 @@ def checkout(request):
     summary = calculate_cart_summary(payable_items, coupon_code=coupon_code)
 
     if summary['is_free_order']:
-        order = _complete_order_and_enrollments(
-            request=request,
-            student=student,
-            payable_items=payable_items,
-            summary=summary,
-            payment_method='FREE',
-        )
+        with transaction.atomic():
+            order = _create_order_record(
+                student=student,
+                payable_items=payable_items,
+                summary=summary,
+                payment_method='FREE',
+                status='PAID',
+            )
+            _sync_enrollments_for_order(student=student, order=order, payment_reference=order.order_id)
+            Cart.objects.filter(student=student, course_id__in=[i.course_id for i in payable_items]).delete()
+
+        request.session.pop('cart_coupon', None)
+        request.session.pop('pending_razorpay_order', None)
         messages.success(request, f"Enrollment confirmed! Order {order.order_id} completed.")
         detail_url = reverse('student:order_detail', args=[order.order_id])
         if _is_ajax(request):
@@ -615,6 +638,16 @@ def checkout(request):
         messages.error(request, msg)
         return redirect('student:cart')
 
+    # Persist PENDING order without creating/updating Enrollment until signature verification succeeds
+    _create_order_record(
+        student=student,
+        payable_items=payable_items,
+        summary=summary,
+        payment_method='RAZORPAY',
+        razorpay_order_id=rzp_order['id'],
+        status='PENDING',
+    )
+
     request.session['pending_razorpay_order'] = {
         'razorpay_order_id': rzp_order['id'],
         'amount_paise': amount_paise,
@@ -636,6 +669,7 @@ def checkout(request):
         'name': 'CourseSphere',
         'description': f"{summary['item_count']} Course{'s' if summary['item_count'] != 1 else ''} Enrollment",
         'verify_url': reverse('student:razorpay_verify'),
+        'failed_url': reverse('student:razorpay_failed'),
         'prefill': {
             'name': request.user.get_full_name() or request.user.username,
             'email': request.user.email or '',
@@ -648,9 +682,18 @@ def checkout(request):
     })
 
 
+def _parse_razorpay_payload(request):
+    if request.content_type and 'application/json' in request.content_type:
+        try:
+            return json.loads(request.body.decode('utf-8') or '{}')
+        except (ValueError, UnicodeDecodeError):
+            return None
+    return request.POST
+
+
 @login_required(login_url='student:student_login')
 def razorpay_verify_payment(request):
-    """Verify Razorpay Checkout payment signature and finalize Order + Enrollments."""
+    """Verify Razorpay payment signature on backend and atomically activate Enrollments."""
     if not hasattr(request.user, 'student_profile'):
         return JsonResponse({'ok': False, 'error': 'Access denied. Only students can complete checkout.'}, status=403)
 
@@ -658,14 +701,9 @@ def razorpay_verify_payment(request):
         return JsonResponse({'ok': False, 'error': 'Method not allowed.'}, status=405)
 
     student = request.user.student_profile
-
-    if request.content_type and 'application/json' in request.content_type:
-        try:
-            data = json.loads(request.body.decode('utf-8') or '{}')
-        except (ValueError, UnicodeDecodeError):
-            return JsonResponse({'ok': False, 'error': 'Invalid payment payload.'}, status=400)
-    else:
-        data = request.POST
+    data = _parse_razorpay_payload(request)
+    if data is None:
+        return JsonResponse({'ok': False, 'error': 'Invalid payment payload.'}, status=400)
 
     razorpay_order_id = (data.get('razorpay_order_id') or '').strip()
     razorpay_payment_id = (data.get('razorpay_payment_id') or '').strip()
@@ -674,78 +712,158 @@ def razorpay_verify_payment(request):
     if not razorpay_order_id or not razorpay_payment_id or not razorpay_signature:
         return JsonResponse({'ok': False, 'error': 'Incomplete Razorpay payment response.'}, status=400)
 
-    # Idempotency guard if payment callback fires twice
-    existing_order = Order.objects.filter(
+    # Guard against replaying an already-processed Razorpay payment ID across different orders/students
+    replayed_payment = Order.objects.filter(
+        razorpay_payment_id=razorpay_payment_id,
+        status='PAID',
+    ).exclude(razorpay_order_id=razorpay_order_id).first()
+    if replayed_payment:
+        return JsonResponse({
+            'ok': False,
+            'duplicate': True,
+            'error': 'Duplicate payment reference detected. This payment has already been processed.',
+        }, status=409)
+
+    # Idempotency guard when the same order callback fires more than once
+    already_paid = Order.objects.filter(
         student=student,
         razorpay_order_id=razorpay_order_id,
         status='PAID',
     ).first()
-    if existing_order:
+    if already_paid:
         request.session.pop('pending_razorpay_order', None)
         request.session.pop('cart_coupon', None)
         return JsonResponse({
             'ok': True,
-            'order_id': existing_order.order_id,
-            'redirect_url': reverse('student:order_detail', args=[existing_order.order_id]),
+            'duplicate': True,
+            'order_id': already_paid.order_id,
+            'redirect_url': reverse('student:order_detail', args=[already_paid.order_id]),
         })
 
-    pending = request.session.get('pending_razorpay_order') or {}
-    if pending.get('razorpay_order_id') != razorpay_order_id:
-        return JsonResponse({
-            'ok': False,
-            'error': 'Payment order mismatch or session expired. Please initiate payment again.',
-        }, status=400)
-
+    # Verify HMAC-SHA256 payment signature before mutating any enrollment
     try:
         is_valid = verify_razorpay_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature)
     except RazorpayConfigurationError as exc:
         return JsonResponse({'ok': False, 'error': str(exc)}, status=500)
 
     if not is_valid:
+        Order.objects.filter(
+            student=student,
+            razorpay_order_id=razorpay_order_id,
+            status='PENDING',
+        ).update(status='FAILED')
+        request.session.pop('pending_razorpay_order', None)
         return JsonResponse({
             'ok': False,
-            'error': 'Payment signature verification failed. Please contact support if amount was debited.',
+            'error': 'Payment signature verification failed. No enrollment was activated.',
         }, status=400)
 
-    pending_course_ids = pending.get('course_ids') or []
-    already_enrolled = set(
-        Enrollment.objects.filter(student=student, course_id__in=pending_course_ids).values_list('course_id', flat=True)
-    )
-    courses = list(Course.objects.filter(id__in=[cid for cid in pending_course_ids if cid not in already_enrolled]))
-    if not courses:
+    pending_session = request.session.get('pending_razorpay_order') or {}
+    if pending_session and pending_session.get('razorpay_order_id') != razorpay_order_id:
         return JsonResponse({
             'ok': False,
-            'error': 'No un-enrolled courses remain for this order.',
+            'error': 'Payment order mismatch or session expired. Please initiate payment again.',
         }, status=400)
 
-    # Compute summary for the exact snapshot courses & coupon locked into the Razorpay order
-    snapshot_items = [Cart(student=student, course=course) for course in courses]
-    summary = calculate_cart_summary(snapshot_items, coupon_code=pending.get('coupon_code', ''))
-    if amount_to_paise(summary['total_amount']) != pending.get('amount_paise'):
-        return JsonResponse({
-            'ok': False,
-            'error': 'Cart total changed during payment. Please verify your cart before retrying.',
-        }, status=400)
+    with transaction.atomic():
+        order = (
+            Order.objects.select_for_update()
+            .filter(student=student, razorpay_order_id=razorpay_order_id)
+            .first()
+        )
+        if not order:
+            return JsonResponse({
+                'ok': False,
+                'error': 'Order not found for this Razorpay transaction.',
+            }, status=404)
 
-    order = _complete_order_and_enrollments(
-        request=request,
-        student=student,
-        payable_items=snapshot_items,
-        summary=summary,
-        payment_method='RAZORPAY',
-        razorpay_order_id=razorpay_order_id,
-        razorpay_payment_id=razorpay_payment_id,
-        razorpay_signature=razorpay_signature,
-    )
+        if order.status == 'PAID':
+            request.session.pop('pending_razorpay_order', None)
+            request.session.pop('cart_coupon', None)
+            return JsonResponse({
+                'ok': True,
+                'duplicate': True,
+                'order_id': order.order_id,
+                'redirect_url': reverse('student:order_detail', args=[order.order_id]),
+            })
+
+        if order.status == 'FAILED':
+            return JsonResponse({
+                'ok': False,
+                'error': 'This payment order was marked failed or cancelled. Please start a new checkout.',
+            }, status=400)
+
+        if Order.objects.filter(razorpay_payment_id=razorpay_payment_id, status='PAID').exclude(pk=order.pk).exists():
+            return JsonResponse({
+                'ok': False,
+                'duplicate': True,
+                'error': 'Duplicate payment reference detected. This payment has already been processed.',
+            }, status=409)
+
+        if pending_session and amount_to_paise(order.total_amount) != pending_session.get('amount_paise'):
+            return JsonResponse({
+                'ok': False,
+                'error': 'Payment amount mismatch detected. Verification aborted.',
+            }, status=400)
+
+        order.status = 'PAID'
+        order.payment_method = 'RAZORPAY'
+        order.razorpay_payment_id = razorpay_payment_id
+        order.razorpay_signature = razorpay_signature
+        order.save(update_fields=['status', 'payment_method', 'razorpay_payment_id', 'razorpay_signature'])
+
+        enrolled_count = _sync_enrollments_for_order(
+            student=student,
+            order=order,
+            payment_reference=razorpay_payment_id,
+        )
+        purchased_course_ids = list(
+            order.items.exclude(course_id__isnull=True).values_list('course_id', flat=True)
+        )
+        Cart.objects.filter(student=student, course_id__in=purchased_course_ids).delete()
+
+    request.session.pop('cart_coupon', None)
+    request.session.pop('pending_razorpay_order', None)
     messages.success(
         request,
         f"Payment verified via Razorpay! Order {order.order_id} confirmed for ₹{order.total_amount}."
     )
     return JsonResponse({
         'ok': True,
+        'duplicate': False,
         'order_id': order.order_id,
+        'enrolled_count': enrolled_count,
         'redirect_url': reverse('student:order_detail', args=[order.order_id]),
     })
+
+
+@login_required(login_url='student:student_login')
+def razorpay_payment_failed(request):
+    """Record a failed or cancelled Razorpay attempt without enrolling the student."""
+    if not hasattr(request.user, 'student_profile'):
+        return JsonResponse({'ok': False, 'error': 'Access denied.'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Method not allowed.'}, status=405)
+
+    student = request.user.student_profile
+    data = _parse_razorpay_payload(request)
+    if data is None:
+        return JsonResponse({'ok': False, 'error': 'Invalid payload.'}, status=400)
+
+    razorpay_order_id = (data.get('razorpay_order_id') or '').strip()
+    if razorpay_order_id:
+        Order.objects.filter(
+            student=student,
+            razorpay_order_id=razorpay_order_id,
+            status='PENDING',
+        ).update(status='FAILED')
+
+    pending_session = request.session.get('pending_razorpay_order') or {}
+    if not razorpay_order_id or pending_session.get('razorpay_order_id') == razorpay_order_id:
+        request.session.pop('pending_razorpay_order', None)
+
+    return JsonResponse({'ok': True, 'status': 'FAILED'})
 
 
 @login_required(login_url='student:student_login')
@@ -761,5 +879,8 @@ def order_detail(request, order_id):
         order_id=order_id,
         student=student,
     )
+    if order.status != 'PAID':
+        messages.warning(request, "Payment has not been completed for this order yet.")
+        return redirect('student:cart')
     return render(request, 'Student/order_success.html', {'order': order})
 

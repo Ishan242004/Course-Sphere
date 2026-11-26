@@ -1,0 +1,234 @@
+{% extends 'Admin/admin_base.html' %}
+
+{% block title %}{{ action_title }} — CourseSphere Admin{% endblock %}
+
+{% block admin_content %}
+<!-- Header Card with Breadcrumb -->
+<div class="cs-panel p-4 mb-4">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_portal:admin_dashboard' %}"><i class="bi bi-shield-check me-1"></i> Admin Cockpit</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ back_url }}">{{ back_label }}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ action_title }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h1 class="display-6 fw-extrabold mb-1" style="color: var(--cs-text-title);">{{ action_title }}</h1>
+            <p class="mb-0" style="color: var(--cs-text-muted);">{{ subtitle }}</p>
+        </div>
+        <div>
+            <a href="{{ back_url }}" class="glass-pill-btn d-inline-flex align-items-center gap-2">
+                <i class="bi bi-arrow-left"></i> Back to {{ back_label }}
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stepped Settings-Style Form Card -->
+<div class="cs-panel p-4 p-md-5 mb-4">
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger glass-alert d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-exclamation-octagon-fill fs-5 text-danger"></i>
+            <div>
+                {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if entity_type == 'student' or entity_type == 'instructor' %}
+        <!-- Section 1: Account & Personal Info -->
+        <div class="cs-form-section-row">
+            <div>
+                <span class="badge mb-2" style="background: var(--cs-primary-light); color: var(--cs-primary); border: 1px solid var(--cs-primary-border); font-size: 0.74rem; padding: 0.32rem 0.7rem; border-radius: 8px; font-family: var(--font-mono);">
+                    <i class="bi bi-person-badge me-1"></i> Section 1
+                </span>
+                <h5 class="fw-bold mb-1" style="color: var(--cs-text-title);">Identity &amp; Credentials</h5>
+                <p class="small mb-0" style="color: var(--cs-text-muted);">Core login details and status.</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Password {% if not is_edit %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Confirm Password {% if not is_edit %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}<div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="glass-inner-card p-3 d-inline-flex align-items-center gap-2" style="cursor: pointer;">
+                        {{ form.is_active }}
+                        <span class="fw-semibold small" style="color: var(--cs-text-title);">Active Account (can sign in to portal)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Role Profile Details -->
+        <div class="cs-form-section-row">
+            <div>
+                <span class="badge mb-2" style="background: rgba(0, 205, 204, 0.12); color: #00cdcc; border: 1px solid rgba(0, 205, 204, 0.3); font-size: 0.74rem; padding: 0.32rem 0.7rem; border-radius: 8px; font-family: var(--font-mono);">
+                    <i class="bi bi-card-checklist me-1"></i> Section 2
+                </span>
+                <h5 class="fw-bold mb-1" style="color: var(--cs-text-title);">
+                    {% if entity_type == 'student' %}Student Academic Profile{% else %}Instructor Faculty Profile{% endif %}
+                </h5>
+                <p class="small mb-0" style="color: var(--cs-text-muted);">Role-specific metadata displayed across the platform.</p>
+            </div>
+            <div class="row g-3">
+                {% if entity_type == 'student' %}
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Roll Number <span class="text-danger">*</span></label>
+                    {{ form.roll_number }}
+                    {% if form.roll_number.errors %}<div class="text-danger small mt-1">{{ form.roll_number.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Mobile Phone (10 digits) <span class="text-danger">*</span></label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                </div>
+                {% else %}
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Specialization <span class="text-danger">*</span></label>
+                    {{ form.specialization }}
+                    {% if form.specialization.errors %}<div class="text-danger small mt-1">{{ form.specialization.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Phone</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Instructor Bio</label>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}<div class="text-danger small mt-1">{{ form.bio.errors.0 }}</div>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% elif entity_type == 'receipt' %}
+        <!-- Section 1: Student & Courses -->
+        <div class="cs-form-section-row">
+            <div>
+                <span class="badge mb-2" style="background: var(--cs-primary-light); color: var(--cs-primary); border: 1px solid var(--cs-primary-border); font-size: 0.74rem; padding: 0.32rem 0.7rem; border-radius: 8px; font-family: var(--font-mono);">
+                    <i class="bi bi-receipt me-1"></i> Section 1
+                </span>
+                <h5 class="fw-bold mb-1" style="color: var(--cs-text-title);">Student &amp; Course Items</h5>
+                <p class="small mb-0" style="color: var(--cs-text-muted);">Totals, promo discount, and 18% GST calculate automatically from selected courses.</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Student <span class="text-danger">*</span></label>
+                    {{ form.student }}
+                    {% if form.student.errors %}<div class="text-danger small mt-1">{{ form.student.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Included Courses <span class="text-danger">*</span></label>
+                    <div class="glass-inner-card p-3" style="max-height: 260px; overflow-y: auto;">
+                        <div class="row row-cols-1 row-cols-md-2 g-2">
+                            {% for checkbox in form.courses %}
+                            <div class="col">
+                                <label class="d-flex align-items-center gap-2 p-2 rounded-2" style="cursor: pointer; background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                                    {{ checkbox.tag }}
+                                    <span class="small fw-semibold" style="color: var(--cs-text-title);">{{ checkbox.choice_label }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if form.courses.errors %}<div class="text-danger small mt-1">{{ form.courses.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Payment & Status -->
+        <div class="cs-form-section-row">
+            <div>
+                <span class="badge mb-2" style="background: rgba(16, 185, 129, 0.12); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.74rem; padding: 0.32rem 0.7rem; border-radius: 8px; font-family: var(--font-mono);">
+                    <i class="bi bi-credit-card me-1"></i> Section 2
+                </span>
+                <h5 class="fw-bold mb-1" style="color: var(--cs-text-title);">Billing &amp; Razorpay Metadata</h5>
+                <p class="small mb-0" style="color: var(--cs-text-muted);">Paid receipts unlock course enrollments automatically.</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Promo Discount</label>
+                    {{ form.coupon_code }}
+                    {% if form.coupon_code.errors %}<div class="text-danger small mt-1">{{ form.coupon_code.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Payment Method <span class="text-danger">*</span></label>
+                    {{ form.payment_method }}
+                    {% if form.payment_method.errors %}<div class="text-danger small mt-1">{{ form.payment_method.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Payment Status <span class="text-danger">*</span></label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Razorpay Order ID</label>
+                    {{ form.razorpay_order_id }}
+                    {% if form.razorpay_order_id.errors %}<div class="text-danger small mt-1">{{ form.razorpay_order_id.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Razorpay Payment ID</label>
+                    {{ form.razorpay_payment_id }}
+                    {% if form.razorpay_payment_id.errors %}<div class="text-danger small mt-1">{{ form.razorpay_payment_id.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions Footer -->
+        <div class="d-flex flex-wrap justify-content-end gap-3 pt-4 mt-3" style="border-top: 1px solid var(--cs-border-light);">
+            <a href="{{ back_url }}" class="glass-pill-btn px-4 py-2 d-inline-flex align-items-center gap-2">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+            <button type="submit" class="glass-btn-primary px-5 py-2 d-inline-flex align-items-center gap-2" style="font-weight: 700;">
+                <i class="bi bi-check-circle-fill"></i> {{ button_text }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

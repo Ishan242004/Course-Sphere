@@ -1,7 +1,9 @@
 from decimal import Decimal
 import uuid
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
+from django.utils import timezone
 from Instructor.models import Course
 
 
@@ -87,6 +89,13 @@ class Order(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['razorpay_payment_id'],
+                condition=~Q(razorpay_payment_id=''),
+                name='unique_nonempty_razorpay_payment_id',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.order_id} ({self.student.user.username} - ₹{self.total_amount})"
@@ -103,10 +112,20 @@ class OrderItem(models.Model):
 
 
 class Enrollment(models.Model):
+    ACTIVE_STATUSES = ('Active', 'Enrolled')
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Enrolled', 'Enrolled'),
+        ('Pending', 'Pending'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='enrollments')
-    enrolled_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
+    payment_reference = models.CharField(max_length=120, blank=True, default='')
+    enrolled_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ['-enrolled_at']
@@ -115,4 +134,4 @@ class Enrollment(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.student.user.username} -> {self.course.course_title}"
+        return f"{self.student.user.username} -> {self.course.course_title} ({self.status})"

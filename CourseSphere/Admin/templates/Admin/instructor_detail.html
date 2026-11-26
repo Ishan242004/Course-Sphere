@@ -1,0 +1,95 @@
+{% extends 'Admin/admin_base.html' %}
+
+{% block title %}{{ instructor.user.get_full_name|default:instructor.user.username }} — Instructor Profile{% endblock %}
+
+{% block admin_content %}
+<div class="cs-panel p-4 mb-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb glass-breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door-fill me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_portal:admin_dashboard' %}">Admin Cockpit</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_portal:instructor_list' %}">All Instructors</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ instructor.user.username }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width: 60px; height: 60px; border-radius: 16px; background: var(--cs-gradient-navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; font-weight: 800; flex-shrink: 0;">
+                {{ instructor.user.first_name|default:instructor.user.username|slice:":1"|upper }}
+            </div>
+            <div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                    <h2 class="fw-extrabold mb-0" style="color: var(--cs-text-title);">{{ instructor.user.get_full_name|default:instructor.user.username }}</h2>
+                    <span class="course-filter-pill">{{ instructor.specialization|default:"Faculty" }}</span>
+                </div>
+                <div class="small" style="color: var(--cs-text-muted); font-family: var(--font-mono);">
+                    @{{ instructor.user.username }} · {{ instructor.user.email }}
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'admin_portal:instructor_list' %}" class="glass-pill-btn py-2 px-3">
+                <i class="bi bi-arrow-left"></i> All Instructors
+            </a>
+            <a href="{% url 'admin_portal:edit_instructor' instructor.id %}" class="glass-btn-primary py-2 px-4">
+                <i class="bi bi-pencil-square"></i> Edit Instructor
+            </a>
+            <button type="button"
+                    class="glass-pill-btn py-2 px-3 text-danger border-danger border-opacity-25"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adminDeleteModal"
+                    data-delete-url="{% url 'admin_portal:delete_instructor' instructor.id %}"
+                    data-delete-title="{{ instructor.user.get_full_name|default:instructor.user.username }}"
+                    data-delete-entity="Instructor"
+                    data-delete-warning="Deleting this instructor permanently removes their account and authored courses.">
+                <i class="bi bi-trash3"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-lg-4">
+        <div class="cs-panel p-4">
+            <h5 class="fw-bold mb-3 pb-2" style="color: var(--cs-text-title); border-bottom: 1px solid var(--cs-border-light);">Faculty Overview</h5>
+            <div class="d-flex flex-column gap-2 small mb-3">
+                <div class="d-flex justify-content-between py-1"><span style="color: var(--cs-text-muted);">Phone</span><strong style="color: var(--cs-text-title); font-family: var(--font-mono);">{{ instructor.phone|default:"—" }}</strong></div>
+                <div class="d-flex justify-content-between py-1"><span style="color: var(--cs-text-muted);">Account Status</span><strong>{% if instructor.user.is_active %}Active{% else %}Inactive{% endif %}</strong></div>
+                <div class="d-flex justify-content-between py-1"><span style="color: var(--cs-text-muted);">Joined</span><strong style="color: var(--cs-text-title);">{{ instructor.created_at|date:"M d, Y" }}</strong></div>
+                <div class="d-flex justify-content-between py-1"><span style="color: var(--cs-text-muted);">Courses Authored</span><strong style="color: var(--cs-primary); font-family: var(--font-mono);">{{ courses.count }}</strong></div>
+            </div>
+            {% if instructor.bio %}
+            <div class="pt-3" style="border-top: 1px solid var(--cs-border-light);">
+                <div class="small fw-bold mb-1" style="color: var(--cs-text-title);">Biography</div>
+                <p class="small mb-0" style="color: var(--cs-text-muted); line-height: 1.6;">{{ instructor.bio }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="cs-panel p-4">
+            <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);"><i class="bi bi-collection-play-fill me-2" style="color: var(--cs-primary);"></i>Published Courses ({{ courses.count }})</h5>
+            {% if courses %}
+            <div class="d-flex flex-column gap-2">
+                {% for c in courses %}
+                <div class="glass-inner-card p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <div class="fw-bold" style="color: var(--cs-text-title);">{{ c.course_title }}</div>
+                        <div class="small" style="color: var(--cs-text-muted);">{{ c.category }} · {{ c.enrollments_count }} enrolled · Created {{ c.created_date|date:"M d, Y" }}</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold" style="color: var(--cs-primary); font-family: var(--font-mono);">{% if c.price == 0 %}Free{% else %}₹{{ c.price }}{% endif %}</span>
+                        <a href="{% url 'admin_portal:edit_course' c.id %}" class="glass-pill-btn py-1 px-3 small">Edit Course</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="small mb-0" style="color: var(--cs-text-muted);">No courses published by this instructor yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
