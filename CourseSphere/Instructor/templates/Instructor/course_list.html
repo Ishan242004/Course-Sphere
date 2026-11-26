@@ -16,14 +16,14 @@
         <div>
             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                 <h1 class="display-6 fw-extrabold mb-0" style="color: var(--cs-text-title);">My Courses</h1>
-                <span class="badge" style="background: rgba(139, 92, 246, 0.14); color: #8B5CF6; border: 1px solid rgba(139, 92, 246, 0.35); font-size: 0.82rem; padding: 0.35rem 0.75rem; border-radius: 9999px; font-family: var(--font-mono);">
+                <span class="badge" style="background: var(--cs-primary-light); color: var(--cs-primary); border: 1px solid var(--cs-primary-border); font-size: 0.82rem; padding: 0.35rem 0.75rem; border-radius: 9999px; font-family: var(--font-mono);">
                     {{ total_courses }} Course{{ total_courses|pluralize }}
                 </span>
             </div>
             <p class="mb-0" style="color: var(--cs-text-muted);">View, search, filter, update, or remove courses you teach on CourseSphere.</p>
         </div>
         <div>
-            <a href="{% url 'instructor:add_course' %}" class="glass-btn-primary glass-btn-instructor d-inline-flex align-items-center gap-2" style="padding: 0.65rem 1.4rem; font-weight: 700;">
+            <a href="{% url 'instructor:add_course' %}" class="glass-btn-primary d-inline-flex align-items-center gap-2" style="padding: 0.65rem 1.4rem; font-weight: 700;">
                 <i class="bi bi-plus-circle-fill"></i> Add Course
             </a>
         </div>
@@ -55,7 +55,7 @@
             </select>
         </div>
         <div class="col-md-2 d-flex gap-2">
-            <button type="submit" class="glass-btn-primary glass-btn-instructor flex-grow-1" style="height: 48px; border-radius: 10px;">
+            <button type="submit" class="glass-btn-primary flex-grow-1" style="height: 48px; border-radius: 10px;">
                 <i class="bi bi-filter"></i> Filter
             </button>
             {% if search_query or selected_category or selected_status %}
@@ -91,7 +91,7 @@
                                 {% if c.course_image %}
                                 <img src="{{ c.course_image.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                                 {% else %}
-                                <i class="bi bi-globe-americas" style="color: #8B5CF6;"></i>
+                                <i class="bi bi-globe-americas" style="color: var(--cs-primary);"></i>
                                 {% endif %}
                             </div>
                             <div class="min-w-0">
@@ -165,7 +165,7 @@
             {% endif %}
             {% for num in page_obj.paginator.page_range %}
                 {% if page_obj.number == num %}
-                <li class="page-item active"><span class="page-link glass-btn-primary glass-btn-instructor py-1 px-3" style="border-radius: 8px;">{{ num }}</span></li>
+                <li class="page-item active"><span class="page-link glass-btn-primary py-1 px-3" style="border-radius: 8px;">{{ num }}</span></li>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                 <li class="page-item"><a class="page-link glass-pill-btn py-1 px-3" href="?{% if extra_query %}{{ extra_query }}&{% endif %}page={{ num }}">{{ num }}</a></li>
                 {% endif %}
@@ -183,7 +183,7 @@
 
     {% else %}
     <div class="text-center py-5 p-4">
-        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(139, 92, 246, 0.12); color: #8B5CF6; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem;" class="mb-3">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--cs-primary-light); color: var(--cs-primary); display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem;" class="mb-3">
             <i class="bi bi-journal-bookmark"></i>
         </div>
         <h5 class="fw-bold mb-2" style="color: var(--cs-text-title);">No Courses Found</h5>
@@ -194,7 +194,7 @@
             You haven't created any courses yet. Add your first course to teach students on CourseSphere!
             {% endif %}
         </p>
-        <a href="{% url 'instructor:add_course' %}" class="glass-btn-primary glass-btn-instructor px-4 py-2 d-inline-flex align-items-center gap-2">
+        <a href="{% url 'instructor:add_course' %}" class="glass-btn-primary px-4 py-2 d-inline-flex align-items-center gap-2">
             <i class="bi bi-plus-circle-fill"></i> Add First Course
         </a>
     </div>

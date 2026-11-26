@@ -319,6 +319,12 @@ class InstructorDashboardAndCourseTests(TestCase):
         self.assertContains(res, "Async Python Draft Workshop")
         self.assertContains(res, "Draft")
 
+        # Instructor Dashboard matches Student colors and omits top site navbar header
+        self.assertNotContains(res, 'class="cs-dock-shell"')
+        self.assertContains(res, 'id="themeToggleBtn"')
+        self.assertNotContains(res, '#8B5CF6')
+        self.assertNotContains(res, 'glass-btn-instructor')
+
         # Other instructor's course is NEVER exposed on dashboard or My Courses
         self.assertNotContains(res, "Secret Instructor B Figma Lab")
         courses_res = self.client.get(self.courses_url)

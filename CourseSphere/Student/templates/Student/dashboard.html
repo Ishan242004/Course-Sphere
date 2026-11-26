@@ -3,10 +3,12 @@
 
 {% block title %}Student Dashboard — CourseSphere{% endblock %}
 
+{% block navbar %}{% endblock %}
+
 {% block content %}
-<div class="py-4">
+<div class="py-4 pb-5">
     <div class="container">
-        <!-- Top Breadcrumb Bar -->
+        <!-- Top Breadcrumb & Quick Actions Bar -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
@@ -14,16 +16,27 @@
                     <li class="breadcrumb-item active" aria-current="page">Student Dashboard</li>
                 </ol>
             </nav>
-            <a href="{% url 'student:course_list' %}" class="glass-btn-primary py-2 px-3" style="font-size: 0.88rem;">
-                <i class="bi bi-compass"></i> Explore Courses
-            </a>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <a href="{% url 'student:cart' %}" class="glass-pill-btn py-2 px-3 position-relative" style="font-size: 0.88rem;">
+                    <i class="bi bi-cart3"></i> Cart
+                    {% if cart_count > 0 %}
+                    <span class="badge rounded-pill ms-1" style="background: var(--cs-primary); color: #fff; font-size: 0.7rem; font-family: var(--font-mono);">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'student:course_list' %}" class="glass-btn-primary py-2 px-3" style="font-size: 0.88rem;">
+                    <i class="bi bi-compass"></i> Explore Courses
+                </a>
+                <button id="themeToggleBtn" type="button" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Theme">
+                    <i class="bi bi-moon-stars-fill" id="themeToggleIcon"></i>
+                </button>
+            </div>
         </div>
 
         <!-- 2-Column Cockpit: Left Profile Rail + Right Bento Workspace -->
         <div class="row g-4 align-items-start">
             <!-- Left Vertical Profile & Account Rail -->
             <aside class="col-xl-4 col-lg-5">
-                <div class="cs-panel p-0 overflow-hidden sticky-top" style="top: 96px;">
+                <div class="cs-panel p-0 overflow-hidden sticky-top" style="top: 24px;">
                     <div class="p-4 text-white" style="background: var(--cs-gradient-navy);">
                         <div class="d-flex align-items-center gap-3 mb-3">
                             <div style="width: 58px; height: 58px; border-radius: 16px; background: var(--cs-gradient-sphere); display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 1.75rem; flex-shrink: 0;">

@@ -225,6 +225,8 @@ class AdminEntitiesCRUDTests(TestCase):
         self.assertContains(response, "All Students")
         self.assertContains(response, "All Instructors")
         self.assertContains(response, "Payment Receipts")
+        self.assertNotContains(response, 'class="cs-dock-shell"')
+        self.assertContains(response, 'id="themeToggleBtn"')
 
     def test_admin_student_full_crud(self):
         # Create

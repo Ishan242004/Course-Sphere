@@ -642,6 +642,8 @@ class StudentCartAndPaymentTests(TestCase):
         self.assertContains(dash_res, "Full Stack Python Mastery")
         self.assertContains(dash_res, "System Design Architecture")
         self.assertContains(dash_res, order.order_id)
+        self.assertNotContains(dash_res, 'class="cs-dock-shell"')
+        self.assertContains(dash_res, 'id="themeToggleBtn"')
         detail_res = self.client.get(reverse('student:course_detail', args=[self.course_one.id]))
         self.assertContains(detail_res, "Enrolled ✓")
 

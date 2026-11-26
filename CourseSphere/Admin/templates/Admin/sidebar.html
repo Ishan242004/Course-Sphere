@@ -1,83 +1,101 @@
 {% load static %}
 {% with url_name=request.resolver_match.url_name %}
 <aside class="glass-admin-sidebar d-flex flex-column h-100">
-    <!-- Admin User Profile Banner -->
-    <div class="sidebar-brand d-flex align-items-center gap-3">
-        <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--cs-gradient-navy); border: 1px solid var(--cs-primary-border); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.25rem; flex-shrink: 0;">
-            <i class="bi bi-shield-lock-fill"></i>
+    <!-- Admin User Profile Banner & Utility Controls -->
+    <div class="sidebar-brand d-flex align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-3 overflow-hidden">
+            <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--cs-gradient-navy); border: 1px solid var(--cs-primary-border); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.25rem; flex-shrink: 0;">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div class="overflow-hidden">
+                <h6 class="fw-bold mb-0 text-truncate" style="font-size: 0.94rem; color: var(--cs-text-title);">{{ user.username }}</h6>
+                <span class="badge" style="background: var(--cs-primary-light); color: var(--cs-primary); border: 1px solid var(--cs-primary-border); font-size: 0.66rem; letter-spacing: 0.06em; font-weight: 700; border-radius: 9999px; padding: 0.18rem 0.5rem; font-family: var(--font-mono);">ADMIN COCKPIT</span>
+            </div>
         </div>
-        <div class="overflow-hidden">
-            <h6 class="fw-bold mb-0 text-truncate" style="font-size: 0.94rem; color: var(--cs-text-title);">{{ user.username }}</h6>
-            <span class="badge" style="background: var(--cs-primary-light); color: var(--cs-primary); border: 1px solid var(--cs-primary-border); font-size: 0.66rem; letter-spacing: 0.06em; font-weight: 700; border-radius: 9999px; padding: 0.18rem 0.5rem; font-family: var(--font-mono);">ADMIN COCKPIT</span>
+        <div class="d-flex align-items-center gap-1 flex-shrink-0">
+            <button id="themeToggleBtn" type="button" class="theme-toggle-btn" style="width: 34px; height: 34px;" aria-label="Toggle theme" title="Toggle Theme">
+                <i class="bi bi-moon-stars-fill" id="themeToggleIcon"></i>
+            </button>
+            <button class="btn glass-pill-btn d-lg-none py-1 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#adminSidebarNav" aria-expanded="false" aria-controls="adminSidebarNav" aria-label="Toggle admin menu">
+                <i class="bi bi-list fs-5"></i>
+            </button>
         </div>
     </div>
 
-    <!-- Navigation Section -->
-    <div class="sidebar-heading">Navigation</div>
-    <ul class="glass-sidebar-nav mb-3">
-        <li>
-            <a href="{% url 'admin_portal:admin_dashboard' %}" class="nav-link {% if url_name == 'admin_dashboard' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-        </li>
-    </ul>
-
-    <!-- Course Management Section -->
-    <div class="sidebar-heading">Course Management</div>
-    <ul class="glass-sidebar-nav mb-3">
-        <li>
-            <a href="{% url 'admin_portal:add_course' %}" class="nav-link {% if url_name == 'add_course' %}active{% endif %}">
-                <i class="bi bi-plus-circle-fill"></i>
-                <span>Add Course</span>
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'admin_portal:course_list' %}" class="nav-link {% if url_name == 'course_list' or url_name == 'edit_course' %}active{% endif %}">
-                <i class="bi bi-journal-text"></i>
-                <span>All Courses</span>
-            </a>
-        </li>
-    </ul>
-
-    <!-- People Directory Section -->
-    <div class="sidebar-heading">People Directory</div>
-    <ul class="glass-sidebar-nav mb-3">
-        <li>
-            <a href="{% url 'admin_portal:student_list' %}" class="nav-link {% if url_name == 'student_list' or url_name == 'add_student' or url_name == 'student_detail' or url_name == 'edit_student' %}active{% endif %}">
-                <i class="bi bi-backpack2-fill"></i>
-                <span>All Students</span>
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'admin_portal:instructor_list' %}" class="nav-link {% if url_name == 'instructor_list' or url_name == 'add_instructor' or url_name == 'instructor_detail' or url_name == 'edit_instructor' %}active{% endif %}">
-                <i class="bi bi-person-video3"></i>
-                <span>All Instructors</span>
-            </a>
-        </li>
-    </ul>
-
-    <!-- Finance & Billing Section -->
-    <div class="sidebar-heading">Finance &amp; Billing</div>
-    <ul class="glass-sidebar-nav mb-3">
-        <li>
-            <a href="{% url 'admin_portal:receipt_list' %}" class="nav-link {% if url_name == 'receipt_list' or url_name == 'add_receipt' or url_name == 'receipt_detail' or url_name == 'edit_receipt' %}active{% endif %}">
-                <i class="bi bi-receipt-cutoff"></i>
-                <span>Payment Receipts</span>
-            </a>
-        </li>
-    </ul>
-
-    <!-- Sidebar Footer -->
-    <div class="glass-sidebar-footer mt-auto pt-3" style="border-top: 1px solid var(--cs-border-light);">
-        <ul class="glass-sidebar-nav">
+    <div id="adminSidebarNav" class="collapse d-lg-flex flex-column flex-grow-1">
+        <!-- Navigation Section -->
+        <div class="sidebar-heading">Navigation</div>
+        <ul class="glass-sidebar-nav mb-3">
             <li>
-                <a href="{% url 'admin_portal:admin_logout' %}" class="nav-link nav-logout">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Log Out</span>
+                <a href="{% url 'admin_portal:admin_dashboard' %}" class="nav-link {% if url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
                 </a>
             </li>
         </ul>
+
+        <!-- Course Management Section -->
+        <div class="sidebar-heading">Course Management</div>
+        <ul class="glass-sidebar-nav mb-3">
+            <li>
+                <a href="{% url 'admin_portal:add_course' %}" class="nav-link {% if url_name == 'add_course' %}active{% endif %}">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Add Course</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_portal:course_list' %}" class="nav-link {% if url_name == 'course_list' or url_name == 'edit_course' %}active{% endif %}">
+                    <i class="bi bi-journal-text"></i>
+                    <span>All Courses</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- People Directory Section -->
+        <div class="sidebar-heading">People Directory</div>
+        <ul class="glass-sidebar-nav mb-3">
+            <li>
+                <a href="{% url 'admin_portal:student_list' %}" class="nav-link {% if url_name == 'student_list' or url_name == 'add_student' or url_name == 'student_detail' or url_name == 'edit_student' %}active{% endif %}">
+                    <i class="bi bi-backpack2-fill"></i>
+                    <span>All Students</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_portal:instructor_list' %}" class="nav-link {% if url_name == 'instructor_list' or url_name == 'add_instructor' or url_name == 'instructor_detail' or url_name == 'edit_instructor' %}active{% endif %}">
+                    <i class="bi bi-person-video3"></i>
+                    <span>All Instructors</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Finance & Billing Section -->
+        <div class="sidebar-heading">Finance &amp; Billing</div>
+        <ul class="glass-sidebar-nav mb-3">
+            <li>
+                <a href="{% url 'admin_portal:receipt_list' %}" class="nav-link {% if url_name == 'receipt_list' or url_name == 'add_receipt' or url_name == 'receipt_detail' or url_name == 'edit_receipt' %}active{% endif %}">
+                    <i class="bi bi-receipt-cutoff"></i>
+                    <span>Payment Receipts</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Sidebar Footer -->
+        <div class="glass-sidebar-footer mt-auto pt-3" style="border-top: 1px solid var(--cs-border-light);">
+            <ul class="glass-sidebar-nav">
+                <li>
+                    <a href="{% url 'home' %}" class="nav-link">
+                        <i class="bi bi-globe-americas"></i>
+                        <span>CourseSphere</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_portal:admin_logout' %}" class="nav-link nav-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Log Out</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
 </aside>
 {% endwith %}

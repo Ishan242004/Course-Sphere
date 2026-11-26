@@ -33,7 +33,7 @@
             <a href="{% url 'instructor:instructor_courses' %}" class="glass-pill-btn py-2 px-3">
                 <i class="bi bi-arrow-left"></i> My Courses
             </a>
-            <a href="{% url 'instructor:edit_course' course.id %}" class="glass-btn-primary glass-btn-instructor py-2 px-4">
+            <a href="{% url 'instructor:edit_course' course.id %}" class="glass-btn-primary py-2 px-4">
                 <i class="bi bi-pencil-square"></i> Edit Course
             </a>
             <button type="button"
@@ -63,7 +63,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="glass-stat-card" style="border-top: 3px solid #8B5CF6;">
+        <div class="glass-stat-card" style="border-top: 3px solid var(--cs-primary);">
             <div class="small fw-bold text-uppercase mb-1" style="color: var(--cs-text-muted); font-family: var(--font-mono);">Listing Price</div>
             <div class="display-6 fw-extrabold" style="color: var(--cs-primary); font-family: var(--font-mono);">{% if course.price == 0 %}Free{% else %}₹{{ course.price }}{% endif %}</div>
         </div>
