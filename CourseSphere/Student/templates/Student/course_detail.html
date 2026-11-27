@@ -9,19 +9,23 @@
     <div class="container position-relative" style="z-index: 2;">
         <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door me-1"></i>Home</a>
+                </li>
                 <li class="breadcrumb-item"><a href="{% url 'student:course_list' %}">Courses</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ course.course_title|truncatechars:35 }}</li>
             </ol>
         </nav>
 
         <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-            <span class="badge rounded-pill px-3 py-2" style="background: rgba(46, 103, 255, 0.28); border: 1px solid rgba(46, 103, 255, 0.5); color: #ffffff; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            <span class="badge rounded-pill px-3 py-2"
+                style="background: rgba(46, 103, 255, 0.28); border: 1px solid rgba(46, 103, 255, 0.5); color: #ffffff; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">
                 <i class="bi bi-tag-fill me-1"></i>{{ course.category }}
             </span>
             <span class="small px-2 py-1" style="color: rgba(255, 255, 255, 0.78);"><i class="bi bi-calendar3 me-1 text-info"></i> Published: {{ course.created_date|date:"F d, Y" }}</span>
-            <span class="small px-2 py-1" style="color: rgba(255, 255, 255, 0.78);"><i class="bi bi-globe me-1 text-info"></i> English</span>
-            <span class="small px-2 py-1" style="color: #00eeba;"><i class="bi bi-award me-1"></i> Verified Sphere Certificate</span>
+            <span class="small px-2 py-1" style="color: rgba(255, 255, 255, 0.78);"><i
+                    class="bi bi-globe me-1 text-info"></i> English</span>
+            <span class="small px-2 py-1" style="color: #00eeba;"><i class="bi bi-award me-1"></i> Verified Sphere
+                Certificate</span>
         </div>
 
         <h1 class="display-5 fw-extrabold text-white mb-0" style="max-width: 850px;">{{ course.course_title }}</h1>
@@ -36,7 +40,8 @@
             {% if course.course_image %}
             <div class="cs-panel p-0 overflow-hidden mb-4">
                 <div style="height: 360px; overflow: hidden;">
-                    <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}"
+                        style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
             </div>
             {% endif %}
@@ -50,30 +55,39 @@
                 <hr style="border-color: var(--cs-border); margin: 2rem 0;">
 
                 <!-- Highlights Bento Box -->
-                <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);"><i class="bi bi-patch-check-fill me-2" style="color: var(--cs-primary);"></i> Course Highlights</h5>
+                <h5 class="fw-bold mb-3" style="color: var(--cs-text-title);"><i class="bi bi-patch-check-fill me-2"
+                        style="color: var(--cs-primary);"></i> Course Highlights</h5>
                 <div class="row g-3">
                     <div class="col-sm-6">
-                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100"
+                            style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
                             <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
-                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Self-paced flexible schedule</span>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Self-paced flexible
+                                schedule</span>
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100"
+                            style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
                             <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
-                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Full lifetime access to resources</span>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Full lifetime access to
+                                resources</span>
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100"
+                            style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
                             <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
-                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Direct mentor Q&A support</span>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Direct mentor Q&A
+                                support</span>
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3 h-100"
+                            style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border-light);">
                             <i class="bi bi-check-lg fs-5 flex-shrink-0" style="color: #10B981;"></i>
-                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Downloadable learning material</span>
+                            <span class="small fw-semibold" style="color: var(--cs-text-body);">Downloadable learning
+                                material</span>
                         </div>
                     </div>
                 </div>
@@ -83,91 +97,108 @@
         <!-- Sticky Enrollment Sidebar -->
         <aside class="col-lg-4">
             <div class="cs-panel p-4 sticky-top" style="top: 96px;">
-                <div class="d-flex align-items-center justify-content-between mb-3 pb-3" style="border-bottom: 1px solid var(--cs-border-light);">
-                    <span class="small text-uppercase fw-bold" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Enrollment Fee</span>
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-3"
+                    style="border-bottom: 1px solid var(--cs-border-light);">
+                    <span class="small text-uppercase fw-bold"
+                        style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Enrollment
+                        Fee</span>
                     <div class="fs-2 fw-extrabold" style="font-family: var(--font-mono);">
                         {% if course.price == 0 %}
-                            <span style="color: #10B981;">Free</span>
+                        <span style="color: #10B981;">Free</span>
                         {% else %}
-                            <span style="color: var(--cs-primary);">₹{{ course.price }}</span>
+                        <span style="color: var(--cs-primary);">₹{{ course.price }}</span>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mb-4">
                     {% if user.is_authenticated and user.student_profile %}
-                        {% if course.id in enrolled_course_ids %}
-                        <a href="{% url 'student:student_dashboard' %}" class="glass-btn-primary text-center text-decoration-none" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
-                            <i class="bi bi-patch-check-fill me-1"></i> Enrolled ✓
-                        </a>
-                        {% elif course.id in cart_course_ids %}
-                        <a href="{% url 'student:cart' %}" class="glass-btn-primary text-center text-decoration-none" style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
-                            <i class="bi bi-cart-check-fill me-1"></i> Go to Cart ({{ cart_count }} · ₹{{ cart_total_amount }})
-                        </a>
-                        <form method="POST" action="{% url 'student:remove_from_cart' course.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="glass-pill-btn w-100 justify-content-center text-danger border-danger border-opacity-25">
-                                <i class="bi bi-trash3 me-1"></i> Remove from Cart
-                            </button>
-                        </form>
-                        {% else %}
-                        <form method="POST" action="{% url 'student:add_to_cart' course.id %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ request.path }}">
-                            <button type="submit" class="glass-btn-primary w-100 mb-2" style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
-                                <i class="bi bi-cart-plus-fill me-1"></i> Add to Cart
-                            </button>
-                            <button type="submit" name="action" value="buy_now" class="glass-pill-btn w-100 justify-content-center">
-                                <i class="bi bi-lightning-charge-fill me-1"></i> Enroll in Course
-                            </button>
-                        </form>
-                        {% endif %}
-                    {% elif user.is_authenticated %}
-                        <a href="{% url 'student:course_list' %}" class="glass-pill-btn justify-content-center">
-                            Browsing as {{ user.username }}
-                        </a>
+                    {% if course.id in enrolled_course_ids %}
+                    <a href="{% url 'student:student_dashboard' %}"
+                        class="glass-btn-primary text-center text-decoration-none"
+                        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
+                        <i class="bi bi-patch-check-fill me-1"></i> Enrolled ✓
+                    </a>
+                    {% elif course.id in cart_course_ids %}
+                    <a href="{% url 'student:cart' %}" class="glass-btn-primary text-center text-decoration-none"
+                        style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
+                        <i class="bi bi-cart-check-fill me-1"></i> Go to Cart ({{ cart_count }} · ₹{{ cart_total_amount }})
+                    </a>
+                    <form method="POST" action="{% url 'student:remove_from_cart' course.id %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="glass-pill-btn w-100 justify-content-center text-danger border-danger border-opacity-25">
+                            <i class="bi bi-trash3 me-1"></i> Remove from Cart
+                        </button>
+                    </form>
                     {% else %}
-                        <a href="{% url 'student:student_login' %}?next={% url 'student:course_detail' course.id %}" class="glass-btn-primary d-block text-center text-decoration-none" style="padding: 0.85rem 1rem; border-radius: 12px;">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Login to Enroll
-                        </a>
-                        <a href="{% url 'student:student_register' %}" class="glass-pill-btn justify-content-center">
-                            Create Free Student Account
-                        </a>
+                    <form method="POST" action="{% url 'student:add_to_cart' course.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class="glass-btn-primary w-100 mb-2"
+                            style="padding: 0.85rem 1rem; border-radius: 12px; font-size: 1rem;">
+                            <i class="bi bi-cart-plus-fill me-1"></i> Add to Cart
+                        </button>
+                        <button type="submit" name="action" value="buy_now"
+                            class="glass-pill-btn w-100 justify-content-center">
+                            <i class="bi bi-lightning-charge-fill me-1"></i> Enroll in Course
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% elif user.is_authenticated %}
+                    <a href="{% url 'student:course_list' %}" class="glass-pill-btn justify-content-center">
+                        Browsing as {{ user.username }}
+                    </a>
+                    {% else %}
+                    <a href="{% url 'student:student_login' %}?next={% url 'student:course_detail' course.id %}"
+                        class="glass-btn-primary d-block text-center text-decoration-none"
+                        style="padding: 0.85rem 1rem; border-radius: 12px;">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Login to Enroll
+                    </a>
+                    <a href="{% url 'student:student_register' %}" class="glass-pill-btn justify-content-center">
+                        Create Free Student Account
+                    </a>
                     {% endif %}
                 </div>
 
                 <!-- Instructor Info Box -->
-                <div class="p-3 rounded-3 mb-3" style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border);">
-                    <span class="small text-uppercase fw-bold d-block mb-2" style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Instructor</span>
+                <div class="p-3 rounded-3 mb-3"
+                    style="background: var(--cs-bg-card-subtle); border: 1px solid var(--cs-border);">
+                    <span class="small text-uppercase fw-bold d-block mb-2"
+                        style="color: var(--cs-text-muted); letter-spacing: 0.07em; font-family: var(--font-mono);">Instructor</span>
                     {% if course.instructor %}
-                        <div class="d-flex align-items-center gap-3">
-                            <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--cs-gradient-sphere); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                                <i class="bi bi-person-fill"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-0" style="color: var(--cs-text-title);">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</h6>
-                                <p class="small mb-0" style="color: var(--cs-text-muted);">{{ course.instructor.specialization|default:"Lead Instructor" }}</p>
-                            </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div
+                            style="width: 44px; height: 44px; border-radius: 12px; background: var(--cs-gradient-sphere); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                            <i class="bi bi-person-fill"></i>
                         </div>
-                        {% if course.instructor.bio %}
-                            <p class="small mt-2 mb-0 pt-2" style="color: var(--cs-text-body); border-top: 1px solid var(--cs-border-light);">{{ course.instructor.bio|truncatewords:25 }}</p>
-                        {% endif %}
+                        <div>
+                            <h6 class="fw-bold mb-0" style="color: var(--cs-text-title);">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</h6>
+                            <p class="small mb-0" style="color: var(--cs-text-muted);">{{ course.instructor.specialization|default:"Lead Instructor" }}</p>
+                        </div>
+                    </div>
+                    {% if course.instructor.bio %}
+                    <p class="small mt-2 mb-0 pt-2" style="color: var(--cs-text-body); border-top: 1px solid var(--cs-border-light);">{{ course.instructor.bio|truncatewords:25 }}</p>
+                    {% endif %}
                     {% else %}
-                        <div class="d-flex align-items-center gap-3">
-                            <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--cs-gradient-sphere); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                                <i class="bi bi-globe-americas"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-0" style="color: var(--cs-text-title);">CourseSphere Academic Faculty</h6>
-                                <p class="small mb-0" style="color: var(--cs-text-muted);">Verified Course Content</p>
-                            </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div
+                            style="width: 44px; height: 44px; border-radius: 12px; background: var(--cs-gradient-sphere); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                            <i class="bi bi-globe-americas"></i>
                         </div>
+                        <div>
+                            <h6 class="fw-bold mb-0" style="color: var(--cs-text-title);">CourseSphere Academic Faculty
+                            </h6>
+                            <p class="small mb-0" style="color: var(--cs-text-muted);">Verified Course Content</p>
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
 
                 <!-- Back link -->
                 <div class="text-center pt-2">
-                    <a href="{% url 'student:course_list' %}" class="small fw-semibold" style="color: var(--cs-primary);">
+                    <a href="{% url 'student:course_list' %}" class="small fw-semibold"
+                        style="color: var(--cs-primary);">
                         <i class="bi bi-arrow-left me-1"></i> Back to All Courses
                     </a>
                 </div>

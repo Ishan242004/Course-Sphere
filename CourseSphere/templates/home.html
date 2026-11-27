@@ -254,8 +254,7 @@
                     {% if course.instructor %}
                     <div class="d-flex align-items-center gap-2 mb-2 small" style="color: var(--cs-text-muted);">
                         <i class="bi bi-person-circle" style="color: var(--cs-primary);"></i>
-                        <span class="fw-semibold" style="color: var(--cs-text-title);">{{
-                            course.instructor.user.get_full_name|default:course.instructor.user.username }}</span>
+                        <span class="fw-semibold" style="color: var(--cs-text-title);">{{ course.instructor.user.get_full_name|default:course.instructor.user.username }}</span>
                         {% if course.instructor.specialization %}
                         <span>· {{ course.instructor.specialization }}</span>
                         {% endif %}
@@ -273,8 +272,7 @@
                     </h5>
                     <p class="small flex-grow-1 mb-3"
                         style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; color: var(--cs-text-muted);">
-                        {{ course.description|default:"Discover comprehensive modules and hands-on projects designed to
-                        advance your skills in the Course Sphere." }}
+                        {{ course.description|default:"Discover comprehensive modules and hands-on projects designed to advance your skills in the Course Sphere." }}
                     </p>
 
                     <div class="d-flex align-items-center justify-content-between gap-2 pt-3 mt-auto"

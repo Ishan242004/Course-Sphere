@@ -58,14 +58,12 @@
                 <div class="col-md-8">
                     <label class="form-label fw-semibold">Course Title <span class="text-danger">*</span></label>
                     {{ form.course_title }}
-                    {% if form.course_title.errors %}<div class="text-danger small mt-1">{{ form.course_title.errors.0
-                        }}</div>{% endif %}
+                    {% if form.course_title.errors %}<div class="text-danger small mt-1">{{ form.course_title.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
                     {{ form.category }}
-                    {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
-                    {% endif %}
+                    {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
                 </div>
             </div>
         </div>
@@ -85,14 +83,12 @@
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Price (₹) <span class="text-danger">*</span></label>
                     {{ form.price }}
-                    {% if form.price.errors %}<div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>{%
-                    endif %}
+                    {% if form.price.errors %}<div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Course Status <span class="text-danger">*</span></label>
                     {{ form.status }}
-                    {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{%
-                    endif %}
+                    {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
                 </div>
             </div>
         </div>
@@ -111,14 +107,12 @@
                 <div class="col-12">
                     <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
                     {{ form.description }}
-                    {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}
-                    </div>{% endif %}
+                    {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-semibold">Course Image</label>
                     {{ form.course_image }}
-                    {% if form.course_image.errors %}<div class="text-danger small mt-1">{{ form.course_image.errors.0
-                        }}</div>{% endif %}
+                    {% if form.course_image.errors %}<div class="text-danger small mt-1">{{ form.course_image.errors.0 }}</div>{% endif %}
                     {% if course and course.course_image %}
                     <div class="small mt-2" style="color: var(--cs-text-muted);">
                         Current file: <code>{{ course.course_image.name }}</code>

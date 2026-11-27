@@ -335,7 +335,11 @@ class InstructorDashboardAndCourseTests(TestCase):
     def test_instructor_course_crud_and_cross_instructor_isolation(self):
         self.client.login(username='prof_ananya', password='Password123')
 
-        # Add Course automatically sets instructor=instructor_a
+        # Add Course GET renders cleanly without template errors and POST sets instructor=instructor_a
+        add_get_res = self.client.get(self.add_course_url)
+        self.assertEqual(add_get_res.status_code, 200)
+        self.assertContains(add_get_res, "Add New Course")
+
         add_res = self.client.post(self.add_course_url, {
             'course_title': 'Microservices with FastAPI',
             'category': 'Backend',
