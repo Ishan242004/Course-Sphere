@@ -1,12 +1,15 @@
+import base64
+import tempfile
 from decimal import Decimal
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from Admin.models import Admin
 from Instructor.models import Instructor, Course
-from Student.models import Enrollment, Order, OrderItem, Student
+from Student.models import Cart, Enrollment, Order, OrderItem, Student
 
 
 class InstructorAuthTests(TestCase):
@@ -405,5 +408,135 @@ class InstructorDashboardAndCourseTests(TestCase):
         self.assertEqual(self.instructor_a.user.first_name, 'Dr. Ananya')
         self.assertEqual(self.instructor_a.specialization, 'Distributed Cloud & Python')
         self.assertContains(res, "Updated professor bio.")
+
+    def test_course_edit_prefills_validates_and_updates_thumbnail(self):
+        self.client.login(username='prof_ananya', password='Password123')
+        edit_url = reverse('instructor:edit_course', args=[self.course_a1.id])
+
+        # GET pre-fills existing values cleanly inside Bootstrap form
+        get_res = self.client.get(edit_url)
+        self.assertEqual(get_res.status_code, 200)
+        self.assertContains(get_res, "Django Production Systems")
+        self.assertContains(get_res, "Backend")
+        self.assertContains(get_res, "499.00")
+
+        # Invalid field updates rejected with validation messages (course unchanged in DB)
+        bad_res = self.client.post(edit_url, {
+            'course_title': '  A ',
+            'category': 'X',
+            'price': '-15.00',
+            'status': 'Published',
+            'description': 'short',
+        })
+        self.assertEqual(bad_res.status_code, 200)
+        self.assertContains(bad_res, "Course title must be at least 3 characters long.")
+        self.assertContains(bad_res, "Category must be at least 2 characters long.")
+        self.assertContains(bad_res, "Description must be at least 10 characters long.")
+        self.course_a1.refresh_from_db()
+        self.assertEqual(self.course_a1.course_title, 'Django Production Systems')
+
+        # Valid update including thumbnail image inside isolated temp media root
+        tiny_png = base64.b64decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+        )
+        with tempfile.TemporaryDirectory() as tmp_media:
+            with override_settings(MEDIA_ROOT=tmp_media):
+                thumb = SimpleUploadedFile('thumb.png', tiny_png, content_type='image/png')
+                ok_res = self.client.post(edit_url, {
+                    'course_title': 'Django Production Systems v2',
+                    'category': 'Software Engineering',
+                    'price': '599.00',
+                    'status': 'Published',
+                    'description': 'Fully updated production Django engineering curriculum.',
+                    'course_image': thumb,
+                }, follow=True)
+                self.assertRedirects(ok_res, self.courses_url)
+                self.course_a1.refresh_from_db()
+                self.assertEqual(self.course_a1.course_title, 'Django Production Systems v2')
+                self.assertEqual(self.course_a1.category, 'Software Engineering')
+                self.assertEqual(self.course_a1.price, Decimal('599.00'))
+                self.assertTrue(bool(self.course_a1.course_image))
+
+                # Edit page shows thumbnail preview & removal option
+                preview_res = self.client.get(edit_url)
+                self.assertContains(preview_res, 'remove_course_image')
+
+                # Removing thumbnail clears course_image cleanly
+                rem_res = self.client.post(edit_url, {
+                    'course_title': 'Django Production Systems v2',
+                    'category': 'Software Engineering',
+                    'price': '599.00',
+                    'status': 'Published',
+                    'description': 'Fully updated production Django engineering curriculum.',
+                    'remove_course_image': 'on',
+                }, follow=True)
+                self.assertRedirects(rem_res, self.courses_url)
+                self.course_a1.refresh_from_db()
+                self.assertFalse(bool(self.course_a1.course_image))
+
+    def test_delete_enrolled_course_preserves_enrollments_and_payment_records(self):
+        self.client.login(username='prof_ananya', password='Password123')
+
+        # Confirmation dialog metadata rendered on course list
+        list_res = self.client.get(self.courses_url)
+        self.assertContains(list_res, 'id="instructorDeleteModal"')
+        self.assertContains(list_res, 'data-enrollments-count="2"')
+
+        # GET delete endpoint safely refuses deletion
+        get_del = self.client.get(reverse('instructor:delete_course', args=[self.course_a1.id]), follow=True)
+        self.assertRedirects(get_del, self.courses_url)
+        self.assertTrue(Course.objects.filter(id=self.course_a1.id).exists())
+
+        # Put course in another student's cart before archiving
+        unenrolled_user = User.objects.create_user(username='stu_three', email='s3@example.com', password='Password123')
+        unenrolled_stu = Student.objects.create(user=unenrolled_user, phone='9333333333', roll_number='STU-03')
+        Cart.objects.create(student=unenrolled_stu, course=self.course_a1)
+
+        # POST delete on enrolled course archives to Draft instead of breaking Enrollment / Order / OrderItem
+        del_res = self.client.post(reverse('instructor:delete_course', args=[self.course_a1.id]), follow=True)
+        self.assertRedirects(del_res, self.courses_url)
+        self.assertContains(del_res, "moved to Draft")
+
+        self.course_a1.refresh_from_db()
+        self.assertEqual(self.course_a1.status, 'Draft')
+        self.assertEqual(Enrollment.objects.filter(course=self.course_a1).count(), 2)
+        self.assertEqual(Order.objects.filter(status='PAID').count(), 1)
+        self.assertEqual(OrderItem.objects.filter(course=self.course_a1).count(), 1)
+        self.assertEqual(Cart.objects.filter(course=self.course_a1).count(), 0)
+
+        # Already enrolled student retains full access to dashboard, receipt, and course detail
+        self.client.logout()
+        self.client.login(username='stu_one', password='Password123')
+        self.assertContains(self.client.get(reverse('student:student_dashboard')), "Django Production Systems")
+        self.assertEqual(self.client.get(reverse('student:course_detail', args=[self.course_a1.id])).status_code, 200)
+
+        # Unenrolled student cannot view or add the Draft course anymore
+        self.client.logout()
+        self.client.login(username='stu_three', password='Password123')
+        self.assertEqual(self.client.get(reverse('student:course_detail', args=[self.course_a1.id])).status_code, 404)
+        add_draft = self.client.post(reverse('student:add_to_cart', args=[self.course_a1.id]), follow=True)
+        self.assertContains(add_draft, "unavailable")
+
+        # Course WITHOUT enrollments (even with historical OrderItem) deletes cleanly while preserving OrderItem snapshot
+        self.client.logout()
+        self.client.login(username='prof_ananya', password='Password123')
+        unenrolled_course = Course.objects.create(
+            course_title='Temporary Course With Failed Order',
+            category='Programming',
+            price=Decimal('150.00'),
+            status='Published',
+            description='Unenrolled course linked only to a failed order attempt.',
+            instructor=self.instructor_a,
+        )
+        failed_order = Order.objects.create(student=unenrolled_stu, total_amount=Decimal('177.00'), status='FAILED')
+        hist_item = OrderItem.objects.create(order=failed_order, course=unenrolled_course, course_title=unenrolled_course.course_title, price=Decimal('150.00'))
+
+        self.client.post(reverse('instructor:delete_course', args=[unenrolled_course.id]), follow=True)
+        self.assertFalse(Course.objects.filter(id=unenrolled_course.id).exists())
+        hist_item.refresh_from_db()
+        self.assertIsNone(hist_item.course)
+        self.assertEqual(hist_item.course_title, 'Temporary Course With Failed Order')
+        self.assertTrue(Order.objects.filter(id=failed_order.id).exists())
+
 
 

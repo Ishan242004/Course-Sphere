@@ -110,12 +110,22 @@
                     {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label fw-semibold">Course Image</label>
+                    <label class="form-label fw-semibold">Course Thumbnail Image</label>
                     {{ form.course_image }}
                     {% if form.course_image.errors %}<div class="text-danger small mt-1">{{ form.course_image.errors.0 }}</div>{% endif %}
                     {% if course and course.course_image %}
-                    <div class="small mt-2" style="color: var(--cs-text-muted);">
-                        Current file: <code>{{ course.course_image.name }}</code>
+                    <div class="glass-inner-card p-3 mt-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{{ course.course_image.url }}" alt="{{ course.course_title }}" style="width: 72px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid var(--cs-border);">
+                            <div class="small" style="color: var(--cs-text-muted);">
+                                <div class="fw-semibold" style="color: var(--cs-text-title);">Current Thumbnail</div>
+                                <code>{{ course.course_image.name }}</code>
+                            </div>
+                        </div>
+                        <label class="form-check d-inline-flex align-items-center gap-2 mb-0" style="cursor: pointer;">
+                            <input type="checkbox" name="remove_course_image" id="removeCourseImage" class="form-check-input">
+                            <span class="small fw-semibold text-danger">Remove thumbnail</span>
+                        </label>
                     </div>
                     {% endif %}
                 </div>

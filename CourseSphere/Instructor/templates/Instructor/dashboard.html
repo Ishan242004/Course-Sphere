@@ -277,6 +277,7 @@
                                     data-bs-target="#instructorDeleteModal"
                                     data-delete-url="{% url 'instructor:delete_course' c.id %}"
                                     data-delete-title="{{ c.course_title }}"
+                                    data-enrollments-count="{{ c.enrolled_students }}"
                                     style="color: #ff6c35 !important; border-color: rgba(255, 108, 53, 0.35) !important; font-size: 0.82rem; width: 34px; height: 34px; padding: 0; border-radius: 9px;">
                                 <i class="bi bi-trash3"></i>
                             </button>

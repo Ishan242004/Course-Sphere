@@ -5,11 +5,12 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Avg, Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from CourseSphere.otp_service import clear_otp_session, send_otp, verify_otp
-from Student.models import Enrollment, OrderItem
+from Student.models import Cart, Enrollment, OrderItem
 from .forms import (
     ForgotPasswordEmailForm,
     InstructorCourseForm,
@@ -261,6 +262,7 @@ def instructor_course_detail(request, course_id):
         'instructor': instructor,
         'course': course,
         'enrollments': enrollments,
+        'total_enrollments_count': course.enrollments.count(),
         'course_revenue': course_revenue,
     })
 
@@ -301,6 +303,8 @@ def instructor_edit_course(request, course_id):
         if form.is_valid():
             updated = form.save(commit=False)
             updated.instructor = instructor
+            if request.POST.get('remove_course_image') and 'course_image' not in request.FILES:
+                updated.course_image = None
             updated.save()
             messages.success(request, f"Course '{updated.course_title}' has been updated!")
             return redirect('instructor:instructor_courses')
@@ -320,13 +324,31 @@ def instructor_edit_course(request, course_id):
 
 @instructor_required
 def instructor_delete_course(request, course_id):
-    """Permanently delete a course strictly owned by the logged-in instructor."""
+    """Safely delete an owned course, or unpublish to Draft if student enrollments exist."""
     instructor = request.user.instructor_profile
     course = get_object_or_404(Course, id=course_id, instructor=instructor)
-    if request.method == 'POST':
-        title = course.course_title
+    if request.method != 'POST':
+        messages.warning(request, "Please confirm course deletion using the Delete confirmation dialog.")
+        return redirect('instructor:instructor_courses')
+
+    enrollment_count = course.enrollments.count()
+    if enrollment_count > 0:
+        with transaction.atomic():
+            if course.status != 'Draft':
+                course.status = 'Draft'
+                course.save(update_fields=['status'])
+            Cart.objects.filter(course=course).delete()
+        messages.warning(
+            request,
+            f"Course '{course.course_title}' has {enrollment_count} student enrollment(s) and was moved to Draft instead of deleting to protect enrollment and payment records."
+        )
+        return redirect('instructor:instructor_courses')
+
+    title = course.course_title
+    with transaction.atomic():
+        Cart.objects.filter(course=course).delete()
         course.delete()
-        messages.success(request, f"Course '{title}' has been deleted.")
+    messages.success(request, f"Course '{title}' has been deleted.")
     return redirect('instructor:instructor_courses')
 
 

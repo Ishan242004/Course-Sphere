@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth import login, logout
@@ -303,10 +303,23 @@ def course_list(request):
 
 
 def course_detail(request, course_id):
-    """
-    Display detailed information for a single course.
-    """
+    """Display course details; Draft courses stay private unless user is enrolled, author, or admin."""
     course = get_object_or_404(Course, id=course_id)
+    if course.status != 'Published':
+        user = request.user
+        is_owner = bool(user.is_authenticated and hasattr(user, 'instructor_profile') and course.instructor_id == user.instructor_profile.id)
+        is_admin = bool(user.is_authenticated and (user.is_superuser or user.is_staff or hasattr(user, 'admin_profile')))
+        is_enrolled = bool(
+            user.is_authenticated
+            and hasattr(user, 'student_profile')
+            and Enrollment.objects.filter(
+                student=user.student_profile,
+                course=course,
+                status__in=Enrollment.ACTIVE_STATUSES,
+            ).exists()
+        )
+        if not (is_owner or is_admin or is_enrolled):
+            raise Http404("Course not available.")
     return render(request, 'Student/course_detail.html', {'course': course})
 
 
@@ -386,6 +399,13 @@ def add_to_cart(request, course_id):
             return JsonResponse({'ok': False, 'already_enrolled': True, 'message': msg, **_serialize_summary(summary)}, status=400)
         messages.info(request, msg)
         return redirect('student:student_dashboard')
+
+    if course.status != 'Published':
+        msg = f"'{course.course_title}' is currently unavailable for enrollment."
+        if _is_ajax(request):
+            return JsonResponse({'ok': False, 'error': msg}, status=400)
+        messages.warning(request, msg)
+        return redirect('student:course_list')
 
     cart_item, created = Cart.objects.get_or_create(student=student, course=course)
     summary = _get_cart_summary_for_student(request, student)
@@ -573,7 +593,10 @@ def checkout(request):
             status__in=Enrollment.ACTIVE_STATUSES,
         ).values_list('course_id', flat=True)
     )
-    payable_items = [item for item in cart_items if item.course_id not in already_enrolled]
+    payable_items = [
+        item for item in cart_items
+        if item.course_id not in already_enrolled and item.course.status == 'Published'
+    ]
     if not payable_items:
         Cart.objects.filter(student=student).delete()
         request.session.pop('cart_coupon', None)

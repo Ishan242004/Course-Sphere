@@ -295,6 +295,24 @@ class InstructorCourseForm(forms.ModelForm):
         model = Course
         fields = ['course_title', 'category', 'price', 'status', 'description', 'course_image']
 
+    def clean_course_title(self):
+        title = (self.cleaned_data.get('course_title') or '').strip()
+        if len(title) < 3:
+            raise forms.ValidationError("Course title must be at least 3 characters long.")
+        return title
+
+    def clean_category(self):
+        category = (self.cleaned_data.get('category') or '').strip()
+        if len(category) < 2:
+            raise forms.ValidationError("Category must be at least 2 characters long.")
+        return category
+
+    def clean_description(self):
+        desc = (self.cleaned_data.get('description') or '').strip()
+        if len(desc) < 10:
+            raise forms.ValidationError("Description must be at least 10 characters long.")
+        return desc
+
 
 class InstructorProfileForm(forms.Form):
     """Profile update form for the authenticated Instructor."""

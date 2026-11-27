@@ -41,7 +41,8 @@
                     data-bs-toggle="modal"
                     data-bs-target="#instructorDeleteModal"
                     data-delete-url="{% url 'instructor:delete_course' course.id %}"
-                    data-delete-title="{{ course.course_title }}">
+                    data-delete-title="{{ course.course_title }}"
+                    data-enrollments-count="{{ total_enrollments_count }}">
                 <i class="bi bi-trash3"></i> Delete
             </button>
         </div>

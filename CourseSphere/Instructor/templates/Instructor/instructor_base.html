@@ -53,14 +53,14 @@
             <form id="instructorDeleteForm" method="POST" action="">
                 {% csrf_token %}
                 <div class="modal-body p-4" style="color: var(--cs-text-body);">
-                    <p>Are you sure you want to permanently delete <strong id="instructorDeleteTitle" style="color: var(--cs-text-title);"></strong>?</p>
-                    <p class="small text-danger mb-0">
-                        <i class="bi bi-info-circle me-1"></i> This action is permanent and will remove student enrollments associated with this course.
+                    <p id="instructorDeletePrompt">Are you sure you want to permanently delete <strong id="instructorDeleteTitle" style="color: var(--cs-text-title);"></strong>?</p>
+                    <p id="instructorDeleteWarning" class="small text-danger mb-0">
+                        <i class="bi bi-info-circle me-1"></i> This action is permanent and cannot be undone.
                     </p>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid var(--cs-border-light); padding: 1rem 1.5rem;">
                     <button type="button" class="glass-pill-btn px-4 py-2" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger px-4 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px; font-weight: 600;">
+                    <button id="instructorDeleteSubmitBtn" type="submit" class="btn btn-danger px-4 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px; font-weight: 600;">
                         <i class="bi bi-trash3-fill"></i> Delete Permanently
                     </button>
                 </div>
@@ -76,8 +76,27 @@ document.addEventListener('DOMContentLoaded', function () {
         deleteModal.addEventListener('show.bs.modal', function (event) {
             const btn = event.relatedTarget;
             if (!btn) return;
-            document.getElementById('instructorDeleteForm').action = btn.getAttribute('data-delete-url') || '';
-            document.getElementById('instructorDeleteTitle').textContent = btn.getAttribute('data-delete-title') || 'this course';
+            const deleteUrl = btn.getAttribute('data-delete-url') || '';
+            const courseTitle = btn.getAttribute('data-delete-title') || 'this course';
+            const enrolledCount = parseInt(btn.getAttribute('data-enrollments-count') || '0', 10);
+
+            document.getElementById('instructorDeleteForm').action = deleteUrl;
+            const titleEl = document.getElementById('instructorDeleteTitle');
+            const warningEl = document.getElementById('instructorDeleteWarning');
+            const submitBtn = document.getElementById('instructorDeleteSubmitBtn');
+            titleEl.textContent = courseTitle;
+
+            if (enrolledCount > 0) {
+                warningEl.className = 'small text-warning mb-0';
+                warningEl.innerHTML = '<i class="bi bi-shield-exclamation me-1"></i> This course has ' + enrolledCount + ' student enrollment(s). Confirming will move it to <strong>Draft</strong> to safely preserve student enrollments and payment records.';
+                submitBtn.className = 'btn btn-warning px-4 py-2 d-inline-flex align-items-center gap-2';
+                submitBtn.innerHTML = '<i class="bi bi-archive-fill"></i> Move to Draft';
+            } else {
+                warningEl.className = 'small text-danger mb-0';
+                warningEl.innerHTML = '<i class="bi bi-info-circle me-1"></i> This action is permanent and cannot be undone.';
+                submitBtn.className = 'btn btn-danger px-4 py-2 d-inline-flex align-items-center gap-2';
+                submitBtn.innerHTML = '<i class="bi bi-trash3-fill"></i> Delete Permanently';
+            }
         });
     }
 });
